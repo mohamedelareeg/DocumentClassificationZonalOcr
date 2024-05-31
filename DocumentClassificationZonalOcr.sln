@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.34909.67
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocumentClassificationZonalOcr.Api", "src\DocumentClassificationZonalOcr.Api\DocumentClassificationZonalOcr.Api.csproj", "{32767F97-F3EF-41E1-8DB9-47C8CAFF03B0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A38BBA58-07AB-4D0C-9621-E3BF27BB77D1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{32767F97-F3EF-41E1-8DB9-47C8CAFF03B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32767F97-F3EF-41E1-8DB9-47C8CAFF03B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32767F97-F3EF-41E1-8DB9-47C8CAFF03B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32767F97-F3EF-41E1-8DB9-47C8CAFF03B0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{32767F97-F3EF-41E1-8DB9-47C8CAFF03B0} = {A38BBA58-07AB-4D0C-9621-E3BF27BB77D1}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5F816000-5BCE-4958-A4BC-47FEB42EFA7F}
+	EndGlobalSection
+EndGlobal
