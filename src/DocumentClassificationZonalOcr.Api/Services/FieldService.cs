@@ -1,6 +1,6 @@
 ﻿using DocumentClassificationZonalOcr.Api.Data.Repositories;
 using DocumentClassificationZonalOcr.Api.Data.Repositories.Abstractions;
-using DocumentClassificationZonalOcr.Api.Enums;
+using DocumentClassificationZonalOcr.Shared.Enums;
 using DocumentClassificationZonalOcr.Api.Models;
 using DocumentClassificationZonalOcr.Api.Results;
 using DocumentClassificationZonalOcr.Api.Services.Abstractions;

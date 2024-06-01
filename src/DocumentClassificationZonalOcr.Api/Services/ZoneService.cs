@@ -1,6 +1,6 @@
 ﻿using DocumentClassificationZonalOcr.Api.Data.Repositories;
 using DocumentClassificationZonalOcr.Api.Data.Repositories.Abstractions;
-using DocumentClassificationZonalOcr.Api.Dtos;
+using DocumentClassificationZonalOcr.Shared.Dtos;
 using DocumentClassificationZonalOcr.Api.Models;
 using DocumentClassificationZonalOcr.Api.Results;
 using DocumentClassificationZonalOcr.Api.Services.Abstractions;

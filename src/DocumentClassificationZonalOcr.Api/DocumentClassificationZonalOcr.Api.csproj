@@ -31,4 +31,8 @@
     <PackageReference Include="System.Drawing.Common" Version="8.0.6" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DocumentClassificationZonalOcr.Shared\DocumentClassificationZonalOcr.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

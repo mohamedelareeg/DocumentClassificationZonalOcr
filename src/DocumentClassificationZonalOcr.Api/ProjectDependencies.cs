@@ -26,6 +26,7 @@ namespace DocumentClassificationZonalOcr.Api
             services.AddScoped<IDocumentRepository, DocumentRepository>();
             services.AddScoped<IPaperRepository, PaperRepository>();
             services.AddScoped<IExportedMetaDataRepository, ExportedMetaDataRepository>();
+            services.AddScoped<IFormDetectionSettingsRepository, FormDetectionSettingsRepository>();
 
             //Services
             services.AddScoped<IFormSampleService, FormSampleService>();
@@ -34,6 +35,9 @@ namespace DocumentClassificationZonalOcr.Api
             services.AddScoped<IFieldService, FieldService>();
             services.AddScoped<IPaperService, PaperService>();
             services.AddScoped<IImageEnhancementService, ImageEnhancementService>();
+            services.AddScoped<IFormDetectionSettingService, FormDetectionSettingService>();
+            services.AddScoped<IFormDetectionService, FormDetectionService>();
+
             return services;
         }
     }

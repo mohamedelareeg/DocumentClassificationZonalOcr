@@ -1,0 +1,85 @@
+﻿@{
+    ViewData["Title"] = "Form Samples";
+}
+
+<div class="container mx-2">
+    <div>
+        <a href="@Url.Action("AddEdit", "FormSample")" class="btn btn-success">Create New</a>
+    </div>
+</div>
+
+<div class="container mx-2">
+    <table id="FormSamplesTable" class="table table-striped table-bordered" style="width:100%">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Action</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/DataTables/datatables.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            var table = $('#FormSamplesTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": "@Url.Action("LoadData", "FormSample")",
+                    "type": "POST",
+                    "contentType": "application/json; charset=utf-8",
+                    "data": function (d) {
+                        return JSON.stringify({
+                            draw: d.draw,
+                            start: d.start,
+                            length: d.length,
+                            searchText: d.search.value,
+                            orderBy: d.order.map(o => `${d.columns[o.column].data} ${o.dir}`).join(', '),
+                            fromDate: $('#fromDate').val(),
+                            toDate: $('#toDate').val()
+                        });
+                    }
+                },
+                "columns": [
+                    { "data": "Serial" },
+                    { "data": "Name" },
+                    {
+                        "data": null,
+                        "render": function (data, type, row) {
+                            return '<a href="@Url.Action("AddEdit", "FormSample")?id=' + row.Id + '" class="btn btn-primary">Edit</a>';
+                        }
+                    },
+                    {
+                        "data": null,
+                        "render": function (data, type, row) {
+                            return '<button onclick="deleteForm(' + row.Id + ')" class="btn btn-danger">Delete</button>';
+                        }
+                    }
+                ]
+            });
+        });
+
+        function deleteForm(id) {
+            if (confirm("Are you sure you want to delete this form sample?")) {
+                $.ajax({
+                    url: '@Url.Action("Delete", "FormSample")/' + id,
+                    type: 'DELETE',
+                    success: function (result) {
+                        $('#FormSamplesTable').DataTable().ajax.reload();
+                    },
+                    error: function (err) {
+                        alert('Error deleting form sample');
+                    }
+                });
+            }
+        }
+    </script>
+}

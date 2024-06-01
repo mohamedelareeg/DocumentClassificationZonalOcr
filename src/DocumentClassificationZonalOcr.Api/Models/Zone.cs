@@ -1,4 +1,4 @@
-﻿using DocumentClassificationZonalOcr.Api.Enums;
+﻿using DocumentClassificationZonalOcr.Shared.Enums;
 using DocumentClassificationZonalOcr.Api.Results;
 using System;
 

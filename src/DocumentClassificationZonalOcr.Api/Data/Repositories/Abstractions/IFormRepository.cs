@@ -1,5 +1,7 @@
 ﻿using DocumentClassificationZonalOcr.Api.Models;
 using DocumentClassificationZonalOcr.Api.Results;
+using DocumentClassificationZonalOcr.Shared.Dtos;
+using DocumentClassificationZonalOcr.Shared.Results;
 
 public interface IFormRepository
 {
@@ -7,4 +9,8 @@ public interface IFormRepository
     Task<Result<Form>> CreateAsync(Form form);
     Task<Result<bool>> UpdateAsync(Form form);
     Task<Result<bool>> DeleteAsync(int id);
+    Task<Result<List<Zone>>> GetAllFormZonesAsync(int formId);
+    Task<Result<CustomList<FormDto>>> GetAllFormsAsync(DataTableOptionsDto options);
+
+
 }

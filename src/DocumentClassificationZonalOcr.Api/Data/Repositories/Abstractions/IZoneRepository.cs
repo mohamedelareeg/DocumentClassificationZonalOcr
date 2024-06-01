@@ -10,6 +10,7 @@ namespace DocumentClassificationZonalOcr.Api.Data.Repositories.Abstractions
         Task<Result<bool>> UpdateAsync(Zone zone);
         Task<Result<bool>> DeleteAsync(int id);
         Task<Result<IEnumerable<Zone>>> GetAllByFormSampleIdAsync(int formSampleId);
+        Task<Result<IEnumerable<Zone>>> GetAllAnchorPointsAsync();
 
     }
 }

@@ -50,5 +50,14 @@ namespace DocumentClassificationZonalOcr.Api.Data.Repositories
             var zones = await _context.Set<Zone>().Where(z => z.FormSampleId == formSampleId).ToListAsync();
             return Result.Success<IEnumerable<Zone>>(zones);
         }
+        public async Task<Result<IEnumerable<Zone>>> GetAllAnchorPointsAsync()
+        {
+            var anchorPoints = await _context.Set<Zone>().Where(z => z.IsAnchorPoint).ToListAsync();
+
+            if (anchorPoints == null || !anchorPoints.Any())
+                return Result.Failure<IEnumerable<Zone>>("ZoneRepository.GetAllAnchorPointsAsync", "No anchor points found.");
+
+            return Result.Success<IEnumerable<Zone>>(anchorPoints);
+        }
     }
 }

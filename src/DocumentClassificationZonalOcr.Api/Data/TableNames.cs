@@ -8,5 +8,6 @@
         public const string FormSamples = nameof(FormSamples);
         public const string Papers = nameof(Papers);
         public const string Zones = nameof(Zones);
+        public const string FormDetectionSettings = nameof(FormDetectionSettings);
     }
 }
