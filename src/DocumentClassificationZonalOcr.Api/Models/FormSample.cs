@@ -1,7 +1,4 @@
 ﻿using DocumentClassificationZonalOcr.Api.Results;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace DocumentClassificationZonalOcr.Api.Models
 {
@@ -9,7 +6,7 @@ namespace DocumentClassificationZonalOcr.Api.Models
     {
         public string ImagePath { get; private set; }
         public int FormId { get; private set; }
-        public List<Zone> Zones { get; private set; }
+        public List<Zone>? Zones { get; private set; }
 
         private FormSample() { }
 

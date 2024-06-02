@@ -143,7 +143,7 @@ namespace DocumentClassificationZonalOcr.MVC.Base
             }
         }
 
-        protected async Task<T2> PostAsync<T, T2>(string endpoint, T content, string token = null)
+        protected async Task<T2> PostAsync<T, T2>(string endpoint, T content, string acceptHeader = "", string token = null)
         {
             try
             {
@@ -151,7 +151,15 @@ namespace DocumentClassificationZonalOcr.MVC.Base
                 var acceptLanguage = GetAcceptLanguage();
                 AddAuthorizationHeader(token);
                 HttpClient.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue(acceptLanguage.ToString()));
-                HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                if (!string.IsNullOrEmpty(acceptHeader))
+                {
+                    HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(acceptHeader));
+                }
+                else
+                {
+                    HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                }
                 var response = await HttpClient.PostAsJsonAsync(endpoint, content);
 
                 if (response.IsSuccessStatusCode)

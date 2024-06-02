@@ -6,22 +6,26 @@ namespace DocumentClassificationZonalOcr.MVC.Controllers
 {
     public class FormSampleController : Controller
     {
+        private readonly IFormClient _formClient;
         private readonly IFormSampleClient _formSampleClient;
-        public FormSampleController(IFormSampleClient formSampleClient)
+
+
+        public FormSampleController(IFormClient formClient, IFormSampleClient formSampleClient)
         {
+            _formClient = formClient;
             _formSampleClient = formSampleClient;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int formId)
         {
-            return View();
+            return View(formId);
         }
 
         [HttpPost]
-        public async Task<IActionResult> LoadData([FromBody] DataTableOptionsDto parameters)
+        public async Task<IActionResult> LoadData(int formId, [FromBody] DataTableOptionsDto parameters)
         {
-            var response = await _formSampleClient.GetAllFormsAsync(parameters);
+            var response = await _formClient.GetAllFormSamplesAsync(formId, parameters);
 
             if (response == null)
             {
@@ -32,7 +36,7 @@ namespace DocumentClassificationZonalOcr.MVC.Controllers
             var data = response.Items.Select((group, index) => new
             {
                 Serial = index + 1,
-                Name = group.Name,
+                ImagePath = group.ImagePath,
                 Id = group.Id,
                 FilterationParams = parameters
             }).ToList();
@@ -46,56 +50,52 @@ namespace DocumentClassificationZonalOcr.MVC.Controllers
             });
         }
 
-        [HttpGet]
-        public async Task<IActionResult> AddEdit(int? id)
-        {
-            if (id.HasValue)
-            {
-                var response = await _formSampleClient.GetFormByIdAsync(id.Value);
-                if (response == null)
-                {
-                    return NotFound();
-                }
-                return View(response);
-            }
-            return View(new FormDto());
-        }
-
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddEdit(FormDto formDto)
+        public async Task<IActionResult> UploadImage(int formId, IFormFile imageFile)
         {
-            if (formDto.Id == 0)
+            if (imageFile != null)
             {
-                var response = await _formSampleClient.CreateFormAsync(formDto.Name);
+                var response = await _formClient.CreateFormSampleAsync(formId, imageFile);
                 if (response == null)
                 {
-                    ModelState.AddModelError("", "Error creating form");
-                    return View(formDto);
-                }
-            }
-            else
-            {
-                var response = await _formSampleClient.ModifyFormNameAsync(formDto.Id, formDto.Name);
-                if (response == null)
-                {
-                    ModelState.AddModelError("", "Error updating form");
-                    return View(formDto);
+                    ModelState.AddModelError("", "Error creating form Sample");
                 }
             }
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", new { formId = formId });
         }
+
+
 
         [HttpDelete]
         public async Task<IActionResult> Delete(int id)
         {
-            var response = await _formSampleClient.RemoveFormAsync(id);
+            var response = await _formSampleClient.RemoveFormSampleAsync(id);
             if (response == null)
             {
                 return NotFound();
             }
             return Ok();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AddZones(int id)
+        {
+            var formSample = await _formSampleClient.GetFormSampleByIdAsync(id);
+            if (formSample == null)
+            {
+                return NotFound();
+            }
+            formSample.ImagePath = formSample.ImagePath.Replace("\\", "/");
+
+
+            return View(formSample);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddZones(int id, List<ZoneDto> zones)
+        {
+            return RedirectToAction("AddZones", new { id = id });
         }
     }
 }

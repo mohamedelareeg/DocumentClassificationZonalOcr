@@ -1,14 +1,10 @@
-﻿using DocumentClassificationZonalOcr.Shared.Enums;
-using DocumentClassificationZonalOcr.Api.Models;
-using DocumentClassificationZonalOcr.Api.Results;
+﻿using DocumentClassificationZonalOcr.Api.Results;
 using DocumentClassificationZonalOcr.Api.Services.Abstractions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using DocumentClassificationZonalOcr.Shared.Dtos;
+using DocumentClassificationZonalOcr.Shared.Enums;
 using DocumentClassificationZonalOcr.Shared.Requests;
 using DocumentClassificationZonalOcr.Shared.Results;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DocumentClassificationZonalOcr.Api.Controllers
 {
@@ -64,29 +60,29 @@ namespace DocumentClassificationZonalOcr.Api.Controllers
         }
 
         [HttpPost("{formId}/samples/add")]
-        public async Task<ActionResult<Result<bool>>> AddSampleToFormAsync(int formId, [FromBody] FormSampleRequestDto sample)
+        public async Task<ActionResult<Result<bool>>> AddSampleToFormAsync(int formId, IFormFile file)
         {
-            var result = await _formService.AddSampleToFormAsync(formId, sample);
+            var result = await _formService.AddSampleToFormAsync(formId, file, null);
             if (result.IsFailure)
                 return BadRequest(result.Error);
 
             return Ok(result.Value);
         }
 
-        [HttpGet("{formId}/fields")]
-        public async Task<ActionResult<Result<IEnumerable<FieldDto>>>> GetAllFormFieldsAsync(int formId)
+        [HttpPost("{formId}/fields")]
+        public async Task<ActionResult<Result<CustomList<FieldDto>>>> GetAllFormFieldsAsync(int formId, [FromBody] DataTableOptionsDto options)
         {
-            var result = await _formService.GetAllFormFieldsAsync(formId);
+            var result = await _formService.GetAllFormFieldsAsync(formId, options);
             if (result.IsFailure)
                 return NotFound(result.Error);
 
             return Ok(result.Value);
         }
 
-        [HttpGet("{formId}/samples")]
-        public async Task<ActionResult<Result<IEnumerable<FormSampleDto>>>> GetAllFormSamplesAsync(int formId)
+        [HttpPost("{formId}/samples")]
+        public async Task<ActionResult<Result<CustomList<FormSampleDto>>>> GetAllFormSamplesAsync(int formId, [FromBody] DataTableOptionsDto options)
         {
-            var result = await _formService.GetAllFormSamplesAsync(formId);
+            var result = await _formService.GetAllFormSamplesAsync(formId, options);
             if (result.IsFailure)
                 return NotFound(result.Error);
 

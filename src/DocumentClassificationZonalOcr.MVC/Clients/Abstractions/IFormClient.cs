@@ -1,5 +1,4 @@
-﻿using DocumentClassificationZonalOcr.MVC.Base;
-using DocumentClassificationZonalOcr.Shared.Dtos;
+﻿using DocumentClassificationZonalOcr.Shared.Dtos;
 using DocumentClassificationZonalOcr.Shared.Enums;
 using DocumentClassificationZonalOcr.Shared.Requests;
 using DocumentClassificationZonalOcr.Shared.Results;
@@ -13,11 +12,11 @@ namespace DocumentClassificationZonalOcr.MVC.Clients.Abstractions
         Task<bool> RemoveFormAsync(int formId);
         Task<bool> AddFieldToFormAsync(int formId, FieldRequestDto field);
         Task<bool> AddSampleToFormAsync(int formId, FormSampleRequestDto sample);
-        Task<IEnumerable<FieldDto>> GetAllFormFieldsAsync(int formId);
-        Task<IEnumerable<FormSampleDto>> GetAllFormSamplesAsync(int formId);
+        Task<CustomList<FieldDto>> GetAllFormFieldsAsync(int formId, DataTableOptionsDto options);
+        Task<CustomList<FormSampleDto>> GetAllFormSamplesAsync(int formId, DataTableOptionsDto options);
         Task<FormDto> GetFormByIdAsync(int formId);
-        Task<FieldDto> CreateFieldAsync(int formId, string name, FieldType type);
-        Task<FormSampleDto> CreateFormSampleAsync(int formId, IFormFile image);
+        Task<bool> CreateFieldAsync(int formId, string name, FieldType type);
+        Task<bool> CreateFormSampleAsync(int formId, IFormFile image);
         Task<CustomList<FormDto>> GetAllFormsAsync(DataTableOptionsDto options);
 
     }

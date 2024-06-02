@@ -1,20 +1,19 @@
 ﻿using DocumentClassificationZonalOcr.Api.Models;
 using DocumentClassificationZonalOcr.Shared.Dtos;
 using DocumentClassificationZonalOcr.Shared.Requests;
-using System.Linq;
 
 namespace DocumentClassificationZonalOcr.Api.MappingExtensions
 {
     public static class FormSampleMappingExtensions
     {
-        public static FormSampleDto ToDto(this FormSample formSample)
+        public static FormSampleDto ToDto(this FormSample formSample, string baseUrl)
         {
             return new FormSampleDto
             {
                 Id = formSample.Id,
                 FormId = formSample.FormId,
-                ImagePath = formSample.ImagePath,
-                Zones = formSample.Zones.Select(zone => new ZoneDto
+                ImagePath = $"{baseUrl}/{formSample.ImagePath}",
+                Zones = formSample.Zones?.Select(zone => new ZoneDto
                 {
                     Id = zone.Id,
                     X = zone.X,
@@ -31,7 +30,7 @@ namespace DocumentClassificationZonalOcr.Api.MappingExtensions
                     FormSampleId = zone.FormSampleId,
                     IsAnchorPoint = zone.IsAnchorPoint,
                     AnchorPointPath = zone.AnchorPointPath,
-                }).ToList()
+                }).ToList() ?? new List<ZoneDto>()
             };
         }
 

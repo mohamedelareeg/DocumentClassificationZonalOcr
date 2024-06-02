@@ -1,14 +1,14 @@
 ﻿using DocumentClassificationZonalOcr.Shared.Dtos;
-using DocumentClassificationZonalOcr.Shared.Results;
+using DocumentClassificationZonalOcr.Shared.Requests;
 
 namespace DocumentClassificationZonalOcr.MVC.Clients.Abstractions
 {
     public interface IFormSampleClient
     {
-        Task<CustomList<FormDto>> GetAllFormsAsync(DataTableOptionsDto options);
-        Task<FormDto> GetFormByIdAsync(int formId);
-        Task<FormDto> CreateFormAsync(string name);
-        Task<bool> ModifyFormNameAsync(int formId, string newName);
-        Task<bool> RemoveFormAsync(int formId);
+        Task<bool> ModifyFormSampleImageAsync(int formSampleId, IFormFile newImage);
+        Task<IEnumerable<ZoneDto>> GetAllZonesAsync(int formSampleId);
+        Task<bool> AddZoneAsync(int formSampleId, ZoneRequestDto zone);
+        Task<FormSampleDto> GetFormSampleByIdAsync(int formSampleId);
+        Task<bool> RemoveFormSampleAsync(int fieldId);
     }
 }

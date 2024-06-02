@@ -1,7 +1,6 @@
 ﻿using DocumentClassificationZonalOcr.MVC.Clients.Abstractions;
 using DocumentClassificationZonalOcr.Shared.Dtos;
 using Microsoft.AspNetCore.Mvc;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DocumentClassificationZonalOcr.MVC.Controllers
 {
@@ -63,19 +62,19 @@ namespace DocumentClassificationZonalOcr.MVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddEdit(FormDto formDto)
         {
-            
+
             if (formDto.Id == 0)
             {
                 var response = await _formClient.CreateFormAsync(formDto.Name);
                 if (response == null)
                 {
-                    ModelState.AddModelError("","Error creating form");
+                    ModelState.AddModelError("", "Error creating form");
                     return View(formDto);
                 }
             }
             else
             {
-                var response = await _formClient.ModifyFormNameAsync(formDto.Id,formDto.Name);
+                var response = await _formClient.ModifyFormNameAsync(formDto.Id, formDto.Name);
                 if (response == null)
                 {
                     ModelState.AddModelError("", "Error updating form");
@@ -85,6 +84,18 @@ namespace DocumentClassificationZonalOcr.MVC.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+        [HttpGet]
+        public async Task<IActionResult> GetFields(int formId)
+        {
+            var dummyField = await _formClient.AddFieldToFormAsync(formId, new Shared.Requests.FieldRequestDto { Name = "Test", Type = Shared.Enums.FieldType.Text });
+            var response = await _formClient.GetAllFormFieldsAsync(formId, new DataTableOptionsDto());
+            if (response == null)
+            {
+                return BadRequest("Error fetching data");
+            }
+            return Json(response);
+        }
+
 
         [HttpDelete]
         public async Task<IActionResult> Delete(int id)

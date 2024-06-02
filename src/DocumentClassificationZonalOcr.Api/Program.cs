@@ -30,7 +30,7 @@ else
 {
     app.UseHttpsRedirection();
 }
-
+app.UseStaticFiles();
 app.UseCors(builder =>
 {
     builder.AllowAnyOrigin()

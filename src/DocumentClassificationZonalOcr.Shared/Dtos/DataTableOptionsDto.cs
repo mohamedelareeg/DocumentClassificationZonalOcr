@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
+﻿using System.Web;
 
 namespace DocumentClassificationZonalOcr.Shared.Dtos
 {
@@ -21,7 +16,12 @@ namespace DocumentClassificationZonalOcr.Shared.Dtos
 
         // Ordering
         public string OrderBy { get; set; }
-
+        public DataTableOptionsDto()
+        {
+            Draw = 1;
+            Start = 0;
+            Length = 10;
+        }
         public string ToQueryString()
         {
             var queryString = HttpUtility.ParseQueryString(string.Empty);

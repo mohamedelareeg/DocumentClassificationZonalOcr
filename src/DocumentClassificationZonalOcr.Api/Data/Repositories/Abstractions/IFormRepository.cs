@@ -11,6 +11,8 @@ public interface IFormRepository
     Task<Result<bool>> DeleteAsync(int id);
     Task<Result<List<Zone>>> GetAllFormZonesAsync(int formId);
     Task<Result<CustomList<FormDto>>> GetAllFormsAsync(DataTableOptionsDto options);
+    Task<Result<CustomList<FieldDto>>> GetFormFieldByIdAsync(int formId, DataTableOptionsDto options);
+    Task<Result<CustomList<FormSampleDto>>> GetFormSampleByIdAsync(int formId, DataTableOptionsDto options);
 
 
 }

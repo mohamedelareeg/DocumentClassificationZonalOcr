@@ -1,7 +1,7 @@
 ﻿using DocumentClassificationZonalOcr.MVC.Base;
 using DocumentClassificationZonalOcr.MVC.Clients.Abstractions;
 using DocumentClassificationZonalOcr.Shared.Dtos;
-using DocumentClassificationZonalOcr.Shared.Results;
+using DocumentClassificationZonalOcr.Shared.Requests;
 
 namespace DocumentClassificationZonalOcr.MVC.Clients
 {
@@ -12,29 +12,35 @@ namespace DocumentClassificationZonalOcr.MVC.Clients
         {
         }
 
-        public async Task<CustomList<FormDto>> GetAllFormsAsync(DataTableOptionsDto options)
+        public async Task<bool> ModifyFormSampleImageAsync(int formSampleId, IFormFile newImage)
         {
-            return await PostAsync<DataTableOptionsDto, CustomList<FormDto>>("api/Form/all", options);
+            var formData = new MultipartFormDataContent();
+            formData.Add(new StreamContent(newImage.OpenReadStream()), "newImage", newImage.FileName);
+
+            return await PutAsync<MultipartFormDataContent, bool>($"api/FormSample/{formSampleId}", formData);
         }
 
-        public async Task<FormDto> GetFormByIdAsync(int formId)
+        public async Task<IEnumerable<ZoneDto>> GetAllZonesAsync(int formSampleId)
         {
-            return await GetAsync<FormDto>($"api/Form/get/{formId}");
+            return await GetAsync<IEnumerable<ZoneDto>>($"api/FormSample/{formSampleId}/zones");
         }
 
-        public async Task<FormDto> CreateFormAsync(string name)
+        public async Task<bool> AddZoneAsync(int formSampleId, ZoneRequestDto zone)
         {
-            return await PostAsync<string, FormDto>("api/Form/create", name);
+            return await PostAsync<ZoneRequestDto, bool>($"api/FormSample/{formSampleId}/zones", zone);
         }
 
-        public async Task<bool> ModifyFormNameAsync(int formId, string newName)
+        public async Task<FormSampleDto> GetFormSampleByIdAsync(int formSampleId)
         {
-            return await PutAsync<string, bool>($"api/Form/modify/{formId}", newName);
+            return await GetAsync<FormSampleDto>($"api/FormSample/{formSampleId}");
         }
 
-        public async Task<bool> RemoveFormAsync(int formId)
+
+
+        public async Task<bool> RemoveFormSampleAsync(int fieldId)
         {
-            return await DeleteAsync<bool>($"api/Form/remove/{formId}");
+            return await DeleteAsync<bool>($"api/FormSample/{fieldId}");
         }
+
     }
 }

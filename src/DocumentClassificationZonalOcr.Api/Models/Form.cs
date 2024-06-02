@@ -1,7 +1,4 @@
 ﻿using DocumentClassificationZonalOcr.Api.Results;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace DocumentClassificationZonalOcr.Api.Models
 {
@@ -40,9 +37,12 @@ namespace DocumentClassificationZonalOcr.Api.Models
 
         public Result<bool> AddSample(FormSample sample)
         {
+
             if (sample == null)
                 return Result.Failure<bool>("Forms.AddSample", "Sample cannot be null.");
 
+            if (Samples == null)
+                Samples = new List<FormSample> { sample };
             Samples.Add(sample);
             return Result.Success(true);
         }
@@ -62,6 +62,8 @@ namespace DocumentClassificationZonalOcr.Api.Models
             if (field == null)
                 return Result.Failure<bool>("Forms.AddField", "Field cannot be null.");
 
+            if (Fields == null)
+                Fields = new List<Field> { field };
             Fields.Add(field);
             return Result.Success(true);
         }

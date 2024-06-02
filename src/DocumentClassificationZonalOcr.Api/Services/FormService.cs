@@ -1,15 +1,11 @@
-﻿using DocumentClassificationZonalOcr.Api.Data.Repositories;
-using DocumentClassificationZonalOcr.Api.Data.Repositories.Abstractions;
-using DocumentClassificationZonalOcr.Shared.Dtos;
-using DocumentClassificationZonalOcr.Shared.Enums;
+﻿using DocumentClassificationZonalOcr.Api.Data.Repositories.Abstractions;
+using DocumentClassificationZonalOcr.Api.MappingExtensions;
 using DocumentClassificationZonalOcr.Api.Models;
 using DocumentClassificationZonalOcr.Api.Results;
 using DocumentClassificationZonalOcr.Api.Services.Abstractions;
-using Microsoft.AspNetCore.Cors.Infrastructure;
-using Microsoft.AspNetCore.Hosting;
+using DocumentClassificationZonalOcr.Shared.Dtos;
+using DocumentClassificationZonalOcr.Shared.Enums;
 using DocumentClassificationZonalOcr.Shared.Requests;
-using DocumentClassificationZonalOcr.Api.MappingExtensions;
-using Microsoft.AspNetCore.Mvc;
 using DocumentClassificationZonalOcr.Shared.Results;
 
 namespace DocumentClassificationZonalOcr.Api.Services
@@ -20,13 +16,15 @@ namespace DocumentClassificationZonalOcr.Api.Services
         private readonly IFieldRepository _fieldRepository;
         private readonly IFormSampleRepository _formSampleRepository;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public FormService(IFormRepository formRepository, IFieldRepository fieldRepository, IFormSampleRepository formSampleRepository, IWebHostEnvironment webHostEnvironment)
+        public FormService(IFormRepository formRepository, IFieldRepository fieldRepository, IFormSampleRepository formSampleRepository, IWebHostEnvironment webHostEnvironment, IHttpContextAccessor httpContextAccessor)
         {
             _formRepository = formRepository;
             _fieldRepository = fieldRepository;
             _formSampleRepository = formSampleRepository;
             _webHostEnvironment = webHostEnvironment;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<Result<FormDto>> CreateFormAsync(string name)
@@ -72,15 +70,15 @@ namespace DocumentClassificationZonalOcr.Api.Services
 
             var form = formResult.Value;
 
-            var fieldCreationRequest = Field.Create(field.Name,field.Type,formId);
-            if(fieldCreationRequest.IsFailure)
+            var fieldCreationRequest = Field.Create(field.Name, field.Type, formId);
+            if (fieldCreationRequest.IsFailure)
                 return Result.Failure<bool>(fieldCreationRequest.Error);
 
             form.AddField(fieldCreationRequest.Value);
             return await _formRepository.UpdateAsync(form);
         }
 
-        public async Task<Result<bool>> AddSampleToFormAsync(int formId, FormSampleRequestDto sample)
+        public async Task<Result<bool>> AddSampleToFormAsync(int formId, IFormFile file, List<ZoneRequestDto>? zones = null)
         {
             var formResult = await _formRepository.GetByIdAsync(formId);
             if (formResult.IsFailure)
@@ -88,30 +86,52 @@ namespace DocumentClassificationZonalOcr.Api.Services
 
             var form = formResult.Value;
 
-            var formSample = sample.ToEntity(form.Id);
-            form.AddSample(formSample);
-            return await _formRepository.UpdateAsync(form);
+            var formDirectory = Path.Combine(_webHostEnvironment.WebRootPath, "forms", formId.ToString());
+            if (!Directory.Exists(formDirectory))
+            {
+                Directory.CreateDirectory(formDirectory);
+            }
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+            var filePath = Path.Combine(formDirectory, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var imagePath = Path.Combine("forms", formId.ToString(), uniqueFileName);
+            var formSample = FormSample.Create(formId, imagePath);
+            if (formSample.IsFailure)
+                return Result.Failure<bool>(formSample.Error);
+
+            form.AddSample(formSample.Value);
+
+            var updateResult = await _formRepository.UpdateAsync(form);
+            if (updateResult.IsFailure)
+                return Result.Failure<bool>(updateResult.Error);
+
+            return Result.Success(true);
         }
 
-        public async Task<Result<IEnumerable<FieldDto>>> GetAllFormFieldsAsync(int formId)
+        public async Task<Result<CustomList<FieldDto>>> GetAllFormFieldsAsync(int formId, DataTableOptionsDto options)
         {
-            var formResult = await _formRepository.GetByIdAsync(formId);
+            var formResult = await _formRepository.GetFormFieldByIdAsync(formId, options);
             if (formResult.IsFailure)
-                return Result.Failure<IEnumerable<FieldDto>>(formResult.Error);
-            var formDto = formResult.Value.ToDto();
+                return Result.Failure<CustomList<FieldDto>>(formResult.Error);
+            var formDto = formResult.Value;
 
-            return Result.Success(formDto.Fields.AsEnumerable());
+            return Result.Success(formDto);
         }
 
-        public async Task<Result<IEnumerable<FormSampleDto>>> GetAllFormSamplesAsync(int formId)
+        public async Task<Result<CustomList<FormSampleDto>>> GetAllFormSamplesAsync(int formId, DataTableOptionsDto options)
         {
-            var formResult = await _formRepository.GetByIdAsync(formId);
+            var formResult = await _formRepository.GetFormSampleByIdAsync(formId, options);
             if (formResult.IsFailure)
-                return Result.Failure<IEnumerable<FormSampleDto>>(formResult.Error);
+                return Result.Failure<CustomList<FormSampleDto>>(formResult.Error);
 
-            var formDto = formResult.Value.ToDto();
+            var formDto = formResult.Value;
 
-            return Result.Success(formDto.Samples.AsEnumerable());
+            return Result.Success(formDto);
         }
 
         public async Task<Result<FormDto>> GetFormByIdAsync(int formId)
@@ -162,7 +182,10 @@ namespace DocumentClassificationZonalOcr.Api.Services
             if (result.IsFailure)
                 return Result.Failure<FormSampleDto>(result.Error);
 
-            var formSampleDto = result.Value.ToDto();
+            var request = _httpContextAccessor.HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host.Value}";
+
+            var formSampleDto = result.Value.ToDto(baseUrl);
             return Result.Success(formSampleDto);
         }
 

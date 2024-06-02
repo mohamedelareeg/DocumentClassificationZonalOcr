@@ -1,10 +1,9 @@
-﻿using DocumentClassificationZonalOcr.Api.Models;
+﻿using DocumentClassificationZonalOcr.Api.MappingExtensions;
+using DocumentClassificationZonalOcr.Api.Models;
 using DocumentClassificationZonalOcr.Api.Results;
 using DocumentClassificationZonalOcr.Shared.Dtos;
 using DocumentClassificationZonalOcr.Shared.Results;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Drawing.Printing;
 using System.Linq.Expressions;
 
 namespace DocumentClassificationZonalOcr.Api.Data.Repositories
@@ -12,10 +11,12 @@ namespace DocumentClassificationZonalOcr.Api.Data.Repositories
     public class FormRepository : IFormRepository
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public FormRepository(ApplicationDbContext context)
+        public FormRepository(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<Result<Form>> GetByIdAsync(int id)
@@ -89,6 +90,68 @@ namespace DocumentClassificationZonalOcr.Api.Data.Repositories
             });
 
             return Result.Success(formDtos.ToCustomList(totalCount, totalPages));
+        }
+        public async Task<Result<CustomList<FieldDto>>> GetFormFieldByIdAsync(int formId, DataTableOptionsDto options)
+        {
+            try
+            {
+                var query = _context.Set<Field>().Where(f => f.FormId == formId);
+
+                if (!string.IsNullOrEmpty(options.SearchText))
+                {
+                    query = query.Where(f => f.Name.Contains(options.SearchText));
+                }
+
+                int totalCount = await query.CountAsync();
+
+                int totalPages = (int)Math.Ceiling((double)totalCount / options.Length);
+
+                var fields = await query
+                    .Skip(options.Start)
+                    .Take(options.Length)
+                    .ToListAsync();
+
+                var fieldDtos = fields.Select(field => field.ToDto());
+
+                return Result.Success(fieldDtos.ToCustomList(totalCount, totalPages));
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<CustomList<FieldDto>>("An error occurred while fetching form fields.", ex.Message);
+            }
+        }
+
+        public async Task<Result<CustomList<FormSampleDto>>> GetFormSampleByIdAsync(int formId, DataTableOptionsDto options)
+        {
+            try
+            {
+                var query = _context.Set<FormSample>().Where(fs => fs.FormId == formId);
+
+                //if (!string.IsNullOrEmpty(options.SearchText))
+                //{
+                //    query = query.Where(fs => fs.Name.Contains(options.SearchText));
+                //}
+
+                int totalCount = await query.CountAsync();
+
+                int totalPages = (int)Math.Ceiling((double)totalCount / options.Length);
+
+                var formSamples = await query
+                    .Skip(options.Start)
+                    .Take(options.Length)
+                    .ToListAsync();
+
+                var request = _httpContextAccessor.HttpContext.Request;
+                var baseUrl = $"{request.Scheme}://{request.Host.Value}";
+
+                var formSampleDtos = formSamples.Select(formSample => formSample.ToDto(baseUrl));
+
+                return Result.Success(formSampleDtos.ToCustomList(totalCount, totalPages));
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<CustomList<FormSampleDto>>("An error occurred while fetching form samples.", ex.Message);
+            }
         }
 
         private IQueryable<Form> ApplyOrderBy(IQueryable<Form> query, string orderBy)

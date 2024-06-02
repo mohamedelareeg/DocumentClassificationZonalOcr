@@ -1,14 +1,15 @@
-﻿using DocumentClassificationZonalOcr.Shared.Dtos;
-using DocumentClassificationZonalOcr.Api.Models;
-using DocumentClassificationZonalOcr.Api.Results;
+﻿using DocumentClassificationZonalOcr.Api.Results;
+using DocumentClassificationZonalOcr.Shared.Dtos;
+using DocumentClassificationZonalOcr.Shared.Requests;
 
 namespace DocumentClassificationZonalOcr.Api.Services.Abstractions
 {
     public interface IFormSampleService
     {
         Task<Result<bool>> ModifyFormSampleImageAsync(int formSampleId, IFormFile newImage);
-        Task<Result<IEnumerable<Zone>>> GetAllZonesAsync(int formSampleId);
-        Task<Result<bool>> AddZoneAsync(int formSampleId, ZoneDto zone);
-        Task<Result<FormSample>> GetFormSampleByIdAsync(int formSampleId);
+        Task<Result<IEnumerable<ZoneDto>>> GetAllZonesAsync(int formSampleId);
+        Task<Result<bool>> AddZoneAsync(int formSampleId, ZoneRequestDto zone);
+        Task<Result<FormSampleDto>> GetFormSampleByIdAsync(int formSampleId);
+        Task<Result<bool>> RemoveFormSampleAsync(int formSampleId);
     }
 }
