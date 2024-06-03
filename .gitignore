@@ -362,3 +362,5 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /src/DocumentClassificationZonalOcr.Api/wwwroot/forms/1
+/src/DocumentClassificationZonalOcr.Api/wwwroot/forms/3/AnchorPoints
+/src/DocumentClassificationZonalOcr.Api/wwwroot/forms/3
