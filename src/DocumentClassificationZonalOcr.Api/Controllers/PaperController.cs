@@ -2,6 +2,7 @@
 using DocumentClassificationZonalOcr.Api.Models;
 using DocumentClassificationZonalOcr.Api.Results;
 using DocumentClassificationZonalOcr.Api.Services.Abstractions;
+using DocumentClassificationZonalOcr.Shared.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DocumentClassificationZonalOcr.Api.Controllers
@@ -48,6 +49,13 @@ namespace DocumentClassificationZonalOcr.Api.Controllers
         public async Task<IActionResult> ProcessImagesAsync(List<IFormFile> images)
         {
             var result = await _paperService.ProcessImagesAsync(images);
+            return CustomResult(result);
+        }
+
+        [HttpPost("all")]
+        public async Task<IActionResult> GetAllPapersAsync([FromBody] DataTableOptionsDto options)
+        {
+            var result = await _paperService.GetAllPapersAsync(options);
             return CustomResult(result);
         }
     }

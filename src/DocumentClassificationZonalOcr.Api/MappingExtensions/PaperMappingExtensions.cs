@@ -6,13 +6,14 @@ namespace DocumentClassificationZonalOcr.Api.MappingExtensions
 {
     public static class PaperMappingExtensions
     {
-        public static PaperDto ToDto(this Paper paper)
+      
+        public static PaperDto ToDto(this Paper paper, string baseUrl)
         {
             return new PaperDto
             {
                 Id = paper.Id,
                 Name = paper.Name,
-                FilePath = paper.FilePath,
+                FilePath = $"{baseUrl}/{paper.FilePath}",
                 DocumentId = paper.DocumentId ?? 0,
                 FormId = paper.FormId ?? 0
             };

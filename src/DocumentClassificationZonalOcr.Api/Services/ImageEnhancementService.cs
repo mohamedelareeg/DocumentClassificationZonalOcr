@@ -5,6 +5,8 @@ using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp;
+using Tesseract;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace DocumentClassificationZonalOcr.Api.Services
 {
@@ -336,18 +338,20 @@ namespace DocumentClassificationZonalOcr.Api.Services
             }
         }
 
-        public async Task<Result<Bitmap>> ResizeImageAsync(Bitmap inputBitmap, int width, int height)
+        public async Task<Result<Bitmap>> ResizeImageAsync(Bitmap inputBitmap, double width, double height)
         {
 
-            using (var image = SixLabors.ImageSharp.Image.Load(inputBitmapToByteArray(inputBitmap)))
+            int newWidth = (int)(inputBitmap.Width * width);
+            int newHeight = (int)(inputBitmap.Height * height);
+
+            Bitmap resizedImage = new Bitmap(newWidth, newHeight);
+            using (Graphics graphics = Graphics.FromImage(resizedImage))
             {
-                image.Mutate(x => x.Resize(width, height));
-                using (var outputStream = new MemoryStream())
-                {
-                    await image.SaveAsJpegAsync(outputStream);
-                    return Result.Success(new Bitmap(outputStream));
-                }
+                graphics.DrawImage(inputBitmap, 0, 0, newWidth, newHeight);
             }
+
+
+            return resizedImage;
         }
 
         public async Task<Result<Bitmap>> ConvertToGrayscaleAsync(Bitmap inputBitmap)
@@ -416,6 +420,54 @@ namespace DocumentClassificationZonalOcr.Api.Services
             }
         }
 
+        public async Task<Result<Bitmap>> CropImageAsync(Bitmap processedImage, double x, double y, double actualWidth, double actualHeight)
+        {
+            try
+            {
+                int cropX = (int)x;
+                int cropY = (int)y;
+                int cropWidth = (int)actualWidth;
+                int cropHeight = (int)actualHeight;
 
+                cropX = Math.Max(cropX, 0);
+                cropY = Math.Max(cropY, 0);
+                cropWidth = Math.Min(cropWidth, processedImage.Width - cropX);
+                cropHeight = Math.Min(cropHeight, processedImage.Height - cropY);
+
+                Bitmap croppedImage = new Bitmap(cropWidth, cropHeight);
+                using (Graphics g = Graphics.FromImage(croppedImage))
+                {
+                    g.DrawImage(processedImage, new System.Drawing.Rectangle(0, 0, cropWidth, cropHeight), new System.Drawing.Rectangle(cropX, cropY, cropWidth, cropHeight), GraphicsUnit.Pixel);
+                }
+
+                #region Testing Only
+                string tempDir = @"C:\temp";
+                if (!Directory.Exists(tempDir))
+                {
+                    Directory.CreateDirectory(tempDir);
+                }
+
+                string tempFilePath = Path.Combine(tempDir, $"{Guid.NewGuid()}.bmp");
+
+                croppedImage.Save(tempFilePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                #endregion
+                return Result.Success(croppedImage);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<Bitmap>($"Error cropping image: {ex.Message}");
+            }
+        }
+     
+
+        public Pix BitmapToPix(Bitmap processedImage)
+        {
+            using (var stream = new System.IO.MemoryStream())
+            {
+                processedImage.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
+                stream.Seek(0, System.IO.SeekOrigin.Begin);
+                return Pix.LoadTiffFromMemory(stream.ToArray());
+            }
+        }
     }
 }

@@ -1,8 +1,12 @@
-﻿using DocumentClassificationZonalOcr.Api.Data.Repositories.Abstractions;
+﻿using DocumentClassificationZonalOcr.Api.Data.Repositories;
+using DocumentClassificationZonalOcr.Api.Data.Repositories.Abstractions;
 using DocumentClassificationZonalOcr.Api.Models;
 using DocumentClassificationZonalOcr.Api.Results;
 using DocumentClassificationZonalOcr.Api.Services.Abstractions;
+using DocumentClassificationZonalOcr.Shared.Dtos;
 using DocumentClassificationZonalOcr.Shared.Enums;
+using DocumentClassificationZonalOcr.Shared.Results;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
@@ -24,6 +28,8 @@ namespace DocumentClassificationZonalOcr.Api.Services
         private readonly IFormDetectionSettingsRepository _formDetectionSettingsRepository;
         private readonly IFormDetectionService _formDetectionService;
         private readonly IOcrService _ocrService;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public PaperService(
             IPaperRepository paperRepository,
@@ -31,7 +37,9 @@ namespace DocumentClassificationZonalOcr.Api.Services
             IImageEnhancementService imageEnhancementService,
             IFormDetectionSettingsRepository formDetectionSettingsRepository,
             IFormDetectionService formDetectionService,
-            IOcrService ocrService)
+            IOcrService ocrService,
+            IWebHostEnvironment webHostEnvironment,
+            IHttpContextAccessor httpContextAccessor)
         {
             _paperRepository = paperRepository;
             _exportedMetaDataRepository = exportedMetaDataRepository;
@@ -39,6 +47,8 @@ namespace DocumentClassificationZonalOcr.Api.Services
             _formDetectionSettingsRepository = formDetectionSettingsRepository;
             _formDetectionService = formDetectionService;
             _ocrService = ocrService;
+            _webHostEnvironment = webHostEnvironment;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<Result<IEnumerable<Paper>>> GetAllPapersByFormIdAsync(int formId)
@@ -150,13 +160,53 @@ namespace DocumentClassificationZonalOcr.Api.Services
                 }
 
                 var formSampleId = formDetectionResult.Value;
-                
-                var formSampleResult = await _ocrService.OcrImageAsync(formSampleId , bitmap, formDetectionSetting);
-                if (formSampleResult.IsFailure)
-                    return Result.Failure<bool>(formSampleResult.Error);
 
-                var formSample = formSampleResult.Value;
 
+         
+
+                var ocrValuesResult = await _ocrService.OcrImageAsync(formSampleId , bitmap, formDetectionSetting);
+                if (ocrValuesResult.IsFailure)
+                    return Result.Failure<bool>(ocrValuesResult.Error);
+
+                var ocrValues = ocrValuesResult.Value;
+
+                string outputDirectory = Path.Combine(_webHostEnvironment.WebRootPath, "papers");
+                if (!Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+                string uniqueFileName = $"{Guid.NewGuid()}.jpg";
+                string outputPath = Path.Combine(outputDirectory, uniqueFileName);
+                string filePath = Path.Combine("papers", uniqueFileName);
+
+                using (var fileStream = new FileStream(outputPath, FileMode.Create))
+                {
+                    await image.CopyToAsync(fileStream);
+                }
+
+                var createPaperResult = Paper.Create(filePath, uniqueFileName);
+                if (createPaperResult.IsFailure)
+                    return Result.Failure<bool>(createPaperResult.Error);
+
+                var createPaper = createPaperResult.Value;
+
+                var addPaperResult = await _paperRepository.CreateAsync(createPaper);
+                if (addPaperResult.IsFailure)
+                    return Result.Failure<bool>(addPaperResult.Error);
+
+
+                foreach (var ocrValue in ocrValues)
+                {
+                    var createExportedMetadataResult = ExportedMetaData.Create(ocrValue.FieldId,ocrValue.Value,createPaper.Id);
+                    if (createExportedMetadataResult.IsFailure)
+                        return Result.Failure<bool>(createExportedMetadataResult.Error);
+
+                    var createExportedMetadata = createExportedMetadataResult.Value;
+
+                    var addExportedMetadataResult = await _exportedMetaDataRepository.AddMetadataAsync(createExportedMetadata);
+                    if (addExportedMetadataResult.IsFailure)
+                        return Result.Failure<bool>(addExportedMetadataResult.Error);
+                }
 
 
             }
@@ -232,6 +282,15 @@ namespace DocumentClassificationZonalOcr.Api.Services
             }
 
             return Result.Success(true);
+        }
+
+        public async Task<Result<CustomList<PaperDto>>> GetAllPapersAsync(DataTableOptionsDto options)
+        {
+            var result = await _paperRepository.GetAllPapersAsync(options);
+            if (result.IsFailure)
+                return Result.Failure<CustomList<PaperDto>>(result.Error);
+
+            return Result.Success(result.Value);
         }
     }
 }

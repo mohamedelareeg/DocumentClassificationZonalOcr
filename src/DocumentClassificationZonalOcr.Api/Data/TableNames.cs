@@ -3,6 +3,7 @@
     public static class TableNames
     {
         public const string Documents = nameof(Documents);
+        public const string ExportedMetaData = nameof(ExportedMetaData);
         public const string Fields = nameof(Fields);
         public const string Forms = nameof(Forms);
         public const string FormSamples = nameof(FormSamples);

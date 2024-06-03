@@ -1,6 +1,7 @@
 ﻿using DocumentClassificationZonalOcr.MVC.Base;
 using DocumentClassificationZonalOcr.Shared.Dtos;
 using DocumentClassificationZonalOcr.Shared.Requests;
+using DocumentClassificationZonalOcr.Shared.Results;
 
 namespace DocumentClassificationZonalOcr.MVC.Clients.Abstractions
 {
@@ -13,5 +14,6 @@ namespace DocumentClassificationZonalOcr.MVC.Clients.Abstractions
         Task<BaseResponse<ExportedMetaDataDto>> GetAllPaperMetadataAsync(int paperId);
         Task<BaseResponse<bool>> ProcessImageAsync(IFormFile image);
         Task<BaseResponse<bool>> ProcessImagesAsync(List<IFormFile> images);
+        Task<BaseResponse<CustomList<PaperDto>>> GetAllPapersAsync(DataTableOptionsDto options);
     }
 }

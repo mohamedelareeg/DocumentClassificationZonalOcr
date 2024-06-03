@@ -2,6 +2,7 @@
 using DocumentClassificationZonalOcr.MVC.Clients.Abstractions;
 using DocumentClassificationZonalOcr.Shared.Dtos;
 using DocumentClassificationZonalOcr.Shared.Requests;
+using DocumentClassificationZonalOcr.Shared.Results;
 using System.Net.Http.Headers;
 
 namespace DocumentClassificationZonalOcr.MVC.Clients
@@ -113,6 +114,11 @@ namespace DocumentClassificationZonalOcr.MVC.Clients
                 formData.Dispose();
             }
         }
+        public async Task<BaseResponse<CustomList<PaperDto>>> GetAllPapersAsync(DataTableOptionsDto options)
+        {
+            return await PostAsync<DataTableOptionsDto, BaseResponse<CustomList<PaperDto>>>("api/Paper/all", options);
+        }
+
 
 
     }

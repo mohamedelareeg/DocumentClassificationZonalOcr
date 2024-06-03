@@ -1,5 +1,7 @@
 ﻿using DocumentClassificationZonalOcr.Api.Models;
 using DocumentClassificationZonalOcr.Api.Results;
+using DocumentClassificationZonalOcr.Shared.Dtos;
+using DocumentClassificationZonalOcr.Shared.Results;
 
 namespace DocumentClassificationZonalOcr.Api.Services.Abstractions
 {
@@ -10,5 +12,6 @@ namespace DocumentClassificationZonalOcr.Api.Services.Abstractions
         Task<Result<IEnumerable<ExportedMetaData>>> GetAllPaperMetadataAsync(int paperId);
         Task<Result<bool>> ProcessImageAsync(IFormFile image);
         Task<Result<bool>> ProcessImagesAsync(List<IFormFile> images);
+        Task<Result<CustomList<PaperDto>>> GetAllPapersAsync(DataTableOptionsDto options);
     }
 }

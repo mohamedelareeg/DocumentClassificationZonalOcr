@@ -1,5 +1,7 @@
 ﻿using DocumentClassificationZonalOcr.Api.Models;
 using DocumentClassificationZonalOcr.Api.Results;
+using DocumentClassificationZonalOcr.Shared.Dtos;
+using DocumentClassificationZonalOcr.Shared.Results;
 
 namespace DocumentClassificationZonalOcr.Api.Data.Repositories.Abstractions
 {
@@ -11,5 +13,6 @@ namespace DocumentClassificationZonalOcr.Api.Data.Repositories.Abstractions
         Task<Result<bool>> DeleteAsync(int id);
         Task<Result<IEnumerable<Paper>>> GetAllByFormIdAsync(int formId);
         Task<Result<IEnumerable<Paper>>> GetAllByDocumentIdAsync(int documentId);
+        Task<Result<CustomList<PaperDto>>> GetAllPapersAsync(DataTableOptionsDto options);
     }
 }
