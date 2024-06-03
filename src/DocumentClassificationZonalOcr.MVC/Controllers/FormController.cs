@@ -23,12 +23,12 @@ namespace DocumentClassificationZonalOcr.MVC.Controllers
         {
             var response = await _formClient.GetAllFormsAsync(parameters);
 
-            if (response == null)
+            if (!response.Succeeded)
             {
-                return BadRequest("Error fetching data");
+                return BadRequest(response.Message);
             }
-            var totalRecords = response.TotalCount;
-            var data = response.Items.Select((group, index) => new
+            var totalRecords = response.Data.TotalCount;
+            var data = response.Data.Items.Select((group, index) => new
             {
                 Serial = index + 1,
                 Name = group.Name,
@@ -49,11 +49,11 @@ namespace DocumentClassificationZonalOcr.MVC.Controllers
             if (id.HasValue)
             {
                 var response = await _formClient.GetFormByIdAsync(id.Value);
-                if (response == null)
+                if (!response.Succeeded)
                 {
-                    return NotFound();
+                    return BadRequest(response.Message);
                 }
-                return View(response);
+                return View(response.Data);
             }
             return View(new FormDto());
         }
@@ -66,18 +66,19 @@ namespace DocumentClassificationZonalOcr.MVC.Controllers
             if (formDto.Id == 0)
             {
                 var response = await _formClient.CreateFormAsync(formDto.Name);
-                if (response == null)
+                if (!response.Succeeded)
                 {
-                    ModelState.AddModelError("", "Error creating form");
+                    ModelState.AddModelError("", response.Message);
                     return View(formDto);
                 }
+              
             }
             else
             {
                 var response = await _formClient.ModifyFormNameAsync(formDto.Id, formDto.Name);
-                if (response == null)
+                if (!response.Succeeded)
                 {
-                    ModelState.AddModelError("", "Error updating form");
+                    ModelState.AddModelError("", response.Message);
                     return View(formDto);
                 }
             }
@@ -87,13 +88,14 @@ namespace DocumentClassificationZonalOcr.MVC.Controllers
         [HttpGet]
         public async Task<IActionResult> GetFields(int formId)
         {
-            var dummyField = await _formClient.AddFieldToFormAsync(formId, new Shared.Requests.FieldRequestDto { Name = "Test", Type = Shared.Enums.FieldType.Text });
-            var response = await _formClient.GetAllFormFieldsAsync(formId, new DataTableOptionsDto());
-            if (response == null)
+            //var dummyField = await _formClient.AddFieldToFormAsync(formId, new Shared.Requests.FieldRequestDto { Name = "Test", Type = Shared.Enums.FieldType.Text });
+            var dummyDatatableOptions = new DataTableOptionsDto { Draw = 1, Start = 0, Length = 100 , OrderBy = "Name" , SearchText = "" };
+            var response = await _formClient.GetAllFormFieldsAsync(formId, dummyDatatableOptions);
+            if (!response.Succeeded)
             {
-                return BadRequest("Error fetching data");
+                return BadRequest(response.Message);
             }
-            return Json(response);
+            return Json(response.Data.Items);
         }
 
 
@@ -101,9 +103,9 @@ namespace DocumentClassificationZonalOcr.MVC.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var response = await _formClient.RemoveFormAsync(id);
-            if (response == null)
+            if (!response.Succeeded)
             {
-                return NotFound();
+                return BadRequest(response.Message);
             }
             return Ok();
         }

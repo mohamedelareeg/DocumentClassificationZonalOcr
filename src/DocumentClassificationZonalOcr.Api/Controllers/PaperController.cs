@@ -1,13 +1,13 @@
-﻿using DocumentClassificationZonalOcr.Api.Models;
+﻿using CaptureSolution.AutomaticReleaseApi.Controllers.Base;
+using DocumentClassificationZonalOcr.Api.Models;
 using DocumentClassificationZonalOcr.Api.Results;
 using DocumentClassificationZonalOcr.Api.Services.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DocumentClassificationZonalOcr.Api.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
-    public class PaperController : ControllerBase
+    public class PaperController : AppControllerBase
     {
         private readonly IPaperService _paperService;
 
@@ -17,38 +17,38 @@ namespace DocumentClassificationZonalOcr.Api.Controllers
         }
 
         [HttpGet("form/{formId}")]
-        public async Task<ActionResult<Result<IEnumerable<Paper>>>> GetAllPapersByFormIdAsync(int formId)
+        public async Task<IActionResult> GetAllPapersByFormIdAsync(int formId)
         {
             var result = await _paperService.GetAllPapersByFormIdAsync(formId);
-            return Ok(result);
+            return CustomResult(result);
         }
 
         [HttpGet("document/{documentId}")]
-        public async Task<ActionResult<Result<IEnumerable<Paper>>>> GetAllPapersByDocumentIdAsync(int documentId)
+        public async Task<IActionResult> GetAllPapersByDocumentIdAsync(int documentId)
         {
             var result = await _paperService.GetAllPapersByDocumentIdAsync(documentId);
-            return Ok(result);
+            return CustomResult(result);
         }
 
         [HttpGet("metadata/{paperId}")]
-        public async Task<ActionResult<Result<IEnumerable<ExportedMetaData>>>> GetAllPaperMetadataAsync(int paperId)
+        public async Task<IActionResult> GetAllPaperMetadataAsync(int paperId)
         {
             var result = await _paperService.GetAllPaperMetadataAsync(paperId);
-            return Ok(result);
+            return CustomResult(result);
         }
 
         [HttpPost("process-image")]
-        public async Task<ActionResult<Result<bool>>> ProcessImageAsync(IFormFile image)
+        public async Task<IActionResult> ProcessImageAsync(IFormFile image)
         {
             var result = await _paperService.ProcessImageAsync(image);
-            return Ok(result);
+            return CustomResult(result);
         }
 
         [HttpPost("process-images")]
-        public async Task<ActionResult<Result<bool>>> ProcessImagesAsync(List<IFormFile> images)
+        public async Task<IActionResult> ProcessImagesAsync(List<IFormFile> images)
         {
             var result = await _paperService.ProcessImagesAsync(images);
-            return Ok(result);
+            return CustomResult(result);
         }
     }
 }

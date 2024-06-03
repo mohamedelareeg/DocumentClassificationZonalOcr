@@ -14,9 +14,9 @@
             <tr>
                 <th>#</th>
                 <th>Name</th>
+                <th>Form Detection</th>
                 <th>Action</th>
                 <th>Delete</th>
-                <th>Form Detection</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -55,21 +55,23 @@
                     {
                         "data": null,
                         "render": function (data, type, row) {
+                            return '<a href="@Url.Action("index", "FormSample")?formId=' + row.id + '" class="btn btn-info">Samples</a>';
+                        }
+                    },
+                    {
+                        "data": null,
+                        "render": function (data, type, row) {
                             return '<a href="@Url.Action("AddEdit", "Form")?id=' + row.id + '" class="btn btn-primary">Edit</a>';
                         }
                     },
+                   
                     {
                         "data": null,
                         "render": function (data, type, row) {
                             return '<button onclick="deleteForm(' + row.id + ')" class="btn btn-danger">Delete</button>';
                         }
-                    },
-                    {
-                        "data": null,
-                        "render": function (data, type, row) {
-                            return '<a href="@Url.Action("index", "FormSample")?formId=' + row.id + '" class="btn btn-info">Form Detection Design</a>';
-                        }
                     }
+                   
                 ]
             });
         });

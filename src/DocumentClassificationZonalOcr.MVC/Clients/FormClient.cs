@@ -10,7 +10,6 @@ namespace DocumentClassificationZonalOcr.MVC.Clients
 {
     public class FormClient : BaseClient, IFormClient
     {
-
         private readonly IHttpClientFactory _httpClientFactory;
 
         public FormClient(IHttpClientFactory httpClientFactory, ILogger<FormClient> logger, IHttpContextAccessor httpContextAccessor)
@@ -19,32 +18,32 @@ namespace DocumentClassificationZonalOcr.MVC.Clients
             _httpClientFactory = httpClientFactory;
         }
 
-        public async Task<bool> AddFieldToFormAsync(int formId, FieldRequestDto field)
+        public async Task<BaseResponse<bool>> AddFieldToFormAsync(int formId, FieldRequestDto field)
         {
-            return await PostAsync<FieldRequestDto, bool>($"api/Form/{formId}/fields/add", field);
+            return await PostAsync<FieldRequestDto, BaseResponse<bool>>($"api/Form/{formId}/fields/add", field);
         }
 
-        public async Task<bool> AddSampleToFormAsync(int formId, FormSampleRequestDto sample)
+        public async Task<BaseResponse<bool>> AddSampleToFormAsync(int formId, FormSampleRequestDto sample)
         {
-            return await PostAsync<FormSampleRequestDto, bool>($"api/Form/{formId}/samples/add", sample);
+            return await PostAsync<FormSampleRequestDto, BaseResponse<bool>>($"api/Form/{formId}/samples/add", sample);
         }
 
-        public async Task<bool> CreateFieldAsync(int formId, string name, FieldType type)
+        public async Task<BaseResponse<bool>> CreateFieldAsync(int formId, string name, FieldType type)
         {
             var fieldRequest = new FieldRequestDto { Name = name, Type = type };
-            return await PostAsync<FieldRequestDto, bool>($"api/Form/{formId}/fields/add", fieldRequest);
+            return await PostAsync<FieldRequestDto, BaseResponse<bool>>($"api/Form/{formId}/fields/add", fieldRequest);
         }
 
-        public async Task<FormDto> CreateFormAsync(string name)
+        public async Task<BaseResponse<FormDto>> CreateFormAsync(string name)
         {
-            return await PostAsync<string, FormDto>("api/Form/create", name);
+            return await PostAsync<string, BaseResponse<FormDto>>("api/Form/create", name);
         }
 
-        public async Task<bool> CreateFormSampleAsync(int formId, IFormFile image)
+        public async Task<BaseResponse<bool>> CreateFormSampleAsync(int formId, IFormFile image)
         {
             if (image == null || image.Length == 0)
             {
-                return false;
+                return BaseResponse<bool>.CreateNullDataResponse("Invalid image");
             }
 
             var uploadUrl = $"api/Form/{formId}/samples/add";
@@ -59,44 +58,37 @@ namespace DocumentClassificationZonalOcr.MVC.Clients
             formData.Add(fileContent, "file", image.FileName);
 
             var response = await client.PostAsync(uploadUrl, formData);
-            if (response.IsSuccessStatusCode)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return response.IsSuccessStatusCode ? BaseResponse<bool>.Success(true) : BaseResponse<bool>.CreateNullDataResponse("Failed to create form sample");
         }
 
-
-        public async Task<CustomList<FieldDto>> GetAllFormFieldsAsync(int formId, DataTableOptionsDto options)
+        public async Task<BaseResponse<CustomList<FieldDto>>> GetAllFormFieldsAsync(int formId, DataTableOptionsDto options)
         {
-            return await PostAsync<DataTableOptionsDto, CustomList<FieldDto>>($"api/Form/{formId}/fields", options);
+            return await PostAsync<DataTableOptionsDto, BaseResponse<CustomList<FieldDto>>>($"api/Form/{formId}/fields", options);
         }
 
-        public async Task<CustomList<FormSampleDto>> GetAllFormSamplesAsync(int formId, DataTableOptionsDto options)
+        public async Task<BaseResponse<CustomList<FormSampleDto>>> GetAllFormSamplesAsync(int formId, DataTableOptionsDto options)
         {
-            return await PostAsync<DataTableOptionsDto, CustomList<FormSampleDto>>($"api/Form/{formId}/samples", options);
+            return await PostAsync<DataTableOptionsDto, BaseResponse<CustomList<FormSampleDto>>>($"api/Form/{formId}/samples", options);
         }
 
-        public async Task<FormDto> GetFormByIdAsync(int formId)
+        public async Task<BaseResponse<FormDto>> GetFormByIdAsync(int formId)
         {
-            return await GetAsync<FormDto>($"api/Form/get/{formId}");
-        }
-        public async Task<CustomList<FormDto>> GetAllFormsAsync(DataTableOptionsDto options)
-        {
-            return await PostAsync<DataTableOptionsDto, CustomList<FormDto>>("api/Form/all", options);
+            return await GetAsync<BaseResponse<FormDto>>($"api/Form/get/{formId}");
         }
 
-        public async Task<bool> ModifyFormNameAsync(int formId, string newName)
+        public async Task<BaseResponse<CustomList<FormDto>>> GetAllFormsAsync(DataTableOptionsDto options)
         {
-            return await PutAsync<string, bool>($"api/Form/modify/{formId}", newName);
+            return await PostAsync<DataTableOptionsDto, BaseResponse<CustomList<FormDto>>>("api/Form/all", options);
         }
 
-        public async Task<bool> RemoveFormAsync(int formId)
+        public async Task<BaseResponse<bool>> ModifyFormNameAsync(int formId, string newName)
         {
-            return await DeleteAsync<bool>($"api/Form/remove/{formId}");
+            return await PutAsync<string, BaseResponse<bool>>($"api/Form/modify/{formId}", newName);
+        }
+
+        public async Task<BaseResponse<bool>> RemoveFormAsync(int formId)
+        {
+            return await DeleteAsync<BaseResponse<bool>>($"api/Form/remove/{formId}");
         }
     }
 }

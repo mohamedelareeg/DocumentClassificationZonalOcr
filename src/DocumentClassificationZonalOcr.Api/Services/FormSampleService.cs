@@ -109,8 +109,9 @@ namespace DocumentClassificationZonalOcr.Api.Services
                 return Result.Failure<bool>(formSampleResult.Error);
 
             var formSample = formSampleResult.Value;
-            string imagePath = formSample.ImagePath;
 
+            string imagePath = formSample.ImagePath;
+            imagePath = Path.Combine(_webHostEnvironment.WebRootPath, imagePath);
             using (var image = Image.Load(imagePath))
             {
                 var croppedImage = image.Clone(ctx => ctx.Crop(new Rectangle(
@@ -119,7 +120,7 @@ namespace DocumentClassificationZonalOcr.Api.Services
                     (int)zone.ActualWidth,
                     (int)zone.ActualHeight)));
 
-                string outputDirectory = Path.Combine(_webHostEnvironment.WebRootPath, "forms", formSampleId.ToString(), "AnchorPoints");
+                string outputDirectory = Path.Combine(_webHostEnvironment.WebRootPath, "forms", formSample.FormId.ToString(), "AnchorPoints");
                 string uniqueFileName = $"{Guid.NewGuid()}.jpg";
                 string outputPath = Path.Combine(outputDirectory, uniqueFileName);
 
@@ -161,6 +162,22 @@ namespace DocumentClassificationZonalOcr.Api.Services
             var result = await _formSampleRepository.DeleteAsync(formSampleId);
             if (result.IsFailure)
                 return Result.Failure<bool>(result.Error);
+            return Result.Success(true);
+        }
+
+        public async Task<Result<bool>> RemoveAllZonesAsync(int formSampleId)
+        {
+            var zonesResult = await _zoneRepository.GetAllByFormSampleIdAsync(formSampleId);
+            if (zonesResult.IsFailure)
+                return Result.Failure<bool>(zonesResult.Error);
+
+            foreach (var zone in zonesResult.Value)
+            {
+                var deleteResult = await _zoneRepository.DeleteAsync(zone.Id);
+                if (deleteResult.IsFailure)
+                    return Result.Failure<bool>(deleteResult.Error);
+            }
+
             return Result.Success(true);
         }
     }

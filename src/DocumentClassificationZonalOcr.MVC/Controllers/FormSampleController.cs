@@ -1,5 +1,6 @@
 ﻿using DocumentClassificationZonalOcr.MVC.Clients.Abstractions;
 using DocumentClassificationZonalOcr.Shared.Dtos;
+using DocumentClassificationZonalOcr.Shared.Requests;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DocumentClassificationZonalOcr.MVC.Controllers
@@ -27,13 +28,13 @@ namespace DocumentClassificationZonalOcr.MVC.Controllers
         {
             var response = await _formClient.GetAllFormSamplesAsync(formId, parameters);
 
-            if (response == null)
+            if (!response.Succeeded)
             {
-                return BadRequest("Error fetching data");
+                return BadRequest(response.Message);
             }
 
-            var totalRecords = response.TotalCount;
-            var data = response.Items.Select((group, index) => new
+            var totalRecords = response.Data.TotalCount;
+            var data = response.Data.Items.Select((group, index) => new
             {
                 Serial = index + 1,
                 ImagePath = group.ImagePath,
@@ -56,10 +57,11 @@ namespace DocumentClassificationZonalOcr.MVC.Controllers
             if (imageFile != null)
             {
                 var response = await _formClient.CreateFormSampleAsync(formId, imageFile);
-                if (response == null)
+                if (!response.Succeeded)
                 {
-                    ModelState.AddModelError("", "Error creating form Sample");
+                    ModelState.AddModelError("", response.Message);
                 }
+               
             }
 
             return RedirectToAction("Index", new { formId = formId });
@@ -71,9 +73,9 @@ namespace DocumentClassificationZonalOcr.MVC.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var response = await _formSampleClient.RemoveFormSampleAsync(id);
-            if (response == null)
+            if (!response.Succeeded)
             {
-                return NotFound();
+                return BadRequest(response.Message);
             }
             return Ok();
         }
@@ -81,21 +83,41 @@ namespace DocumentClassificationZonalOcr.MVC.Controllers
         [HttpGet]
         public async Task<IActionResult> AddZones(int id)
         {
-            var formSample = await _formSampleClient.GetFormSampleByIdAsync(id);
-            if (formSample == null)
+            var response = await _formSampleClient.GetFormSampleByIdAsync(id);
+            if (!response.Succeeded)
             {
-                return NotFound();
+                return BadRequest(response.Message);
             }
-            formSample.ImagePath = formSample.ImagePath.Replace("\\", "/");
+
+            response.Data.ImagePath = response.Data.ImagePath.Replace("\\", "/");
 
 
-            return View(formSample);
+            return View(response.Data);
         }
 
         [HttpPost]
         public async Task<IActionResult> AddZones(int id, List<ZoneDto> zones)
         {
             return RedirectToAction("AddZones", new { id = id });
+        }
+        [HttpPost]
+        public async Task<IActionResult> SubmitRectangleData([FromBody] FormSampleZoneRequestDto data)
+        {
+            var deleteResponse = await _formSampleClient.RemoveAllZonesAsync(data.Id);
+            if (!deleteResponse.Succeeded)
+            {
+                return BadRequest(deleteResponse.Message);
+            }
+            foreach (var item in data.Rectangles)
+            {
+                var response = await _formSampleClient.AddZoneAsync(data.Id,item);
+                if (!response.Succeeded)
+                {
+                    return BadRequest(response.Message);
+                }
+            }
+            //return RedirectToAction("Index", new { formId = formId });
+            return Ok(data);
         }
     }
 }

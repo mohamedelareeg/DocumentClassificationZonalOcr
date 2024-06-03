@@ -12,6 +12,7 @@ namespace DocumentClassificationZonalOcr.Shared.Dtos
         public double ActualImageWidth { get; set; }
         public double ActualImageHeight { get; set; }
         public int FieldId { get; set; }
+        public string? FieldName { get; set; }
         public string Regex { get; set; }
         public string WhiteList { get; set; }
         public bool IsDuplicated { get; set; }

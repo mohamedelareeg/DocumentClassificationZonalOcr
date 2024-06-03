@@ -16,7 +16,7 @@ namespace DocumentClassificationZonalOcr.Api.Data.Repositories
 
         public async Task<Result<FormSample>> GetByIdAsync(int id)
         {
-            var formSample = await _context.Set<FormSample>().FindAsync(id);
+            var formSample = await _context.Set<FormSample>().Include(a=>a.Zones).FirstOrDefaultAsync(a=>a.Id == id);
             return formSample != null ? Result.Success(formSample) : Result.Failure<FormSample>("FormSample not found.");
         }
 

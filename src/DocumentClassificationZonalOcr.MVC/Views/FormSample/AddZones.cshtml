@@ -1,7 +1,7 @@
 ﻿@using Newtonsoft.Json;
 @model DocumentClassificationZonalOcr.Shared.Dtos.FormSampleDto
 @{
-    ViewData["Title"] = "Edit Template Image";
+    ViewData["Title"] = "Modify Zones";
 
     JsonSerializerSettings settings = new JsonSerializerSettings
             {
@@ -10,665 +10,159 @@
     string serializedModel = JsonConvert.SerializeObject(Model.Zones, settings);
 }
 
-<h1>Edit Template Image</h1>
 <style>
     canvas {
         border: 1px solid #000;
     }
 </style>
-<div class="row">
-    <div class="col-md-12 mb-3">
-
-        <a href="@Url.Action("Index", "FormSample", new { formId = Model.FormId })" class="btn btn-info">Back to Template Images</a>
-        <button type="button" id="submitAllRectangles" class="btn btn-success">Submit All</button>
-
+<div class="container-fluid">
+    <div class="row mt-3">
+        <div class="col-md-12">
+            <div class="btn-container text-center">
+                <a href="@Url.Action("Index", "FormSample", new { formId = Model.FormId })" class="btn btn-info">Back to Template Images</a>
+                <button type="button" id="submitAllRectangles" class="btn btn-success">Submit All</button>
+            </div>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="col-md-12">
-        <h2>Rectangles</h2>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>X</th>
-                    <th>Y</th>
-                    <th>Width</th>
-                    <th>Height</th>
-                    <th>Field Id</th>
-                    <th>Edit</th>
-                </tr>
-            </thead>
-            <tbody id="rectangleData"></tbody>
-        </table>
+
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <canvas id="imageCanvas" class="canvas-container"></canvas>
+        </div>
     </div>
-</div>
-<div id="rectangleForm" style="display: none;">
-    <h3>Edit Rectangle</h3>
-    <form id="editRectangleForm" class="modern-form">
 
-        <div class="form-group">
-            <label for="regex">Regex</label>
-            <input type="text" id="regex" name="regex" class="form-control">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <table id="dataTable" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>X</th>
+                        <th>Y</th>
+                        <th>Width</th>
+                        <th>Height</th>
+                        <th>Anchor Point/Field</th>
+                    </tr>
+                </thead>
+                <tbody id="rectangleData"></tbody>
+            </table>
         </div>
-        <div class="form-group">
-            <label for="whiteList">White List</label>
-            <input type="text" id="whiteList" name="whiteList" class="form-control">
-        </div>
-        <div class="form-check">
-            <input type="checkbox" id="isDuplicated" name="isDuplicated" class="form-check-input">
-            <label for="isDuplicated" class="form-check-label">Is Duplicated</label>
-        </div>
-        <div class="form-group">
-            <label for="zoneFieldType">Zone Field Type</label>
-            <select id="zoneFieldType" name="zoneFieldType" class="form-control">
-                <option value="1">Side Text</option>
-                <option value="2">Text Below</option>
-                <option value="3">Full Text</option>
-                <option value="4">Cheque Number</option>
-                <option value="5">Date</option>
-                <option value="6">Handwriting</option>
-                <option value="7">Hand Signature</option>
-            </select>
-        </div>
-        <div class="button-group">
-            <button type="button" id="saveRectangleData" class="btn btn-primary">Save</button>
-            <button type="button" id="cancelEdit" class="btn btn-secondary">Cancel</button>
-        </div>
-    </form>
-</div>
-
-<div class="row">
-    <div class="col-md-12">
-        <!-- Use col-md-12 to make it full width -->
-        <h2>Image Canvas</h2>
-        <canvas id="imageCanvas" style="width: 100vw; height: 100vh;"></canvas>
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.5.0/fabric.min.js"></script>
 @section Scripts {
-<script>
-    const canvas = new fabric.Canvas("imageCanvas", {
-        selection: true, // Enable selection of objects
-    });
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.5.0/fabric.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#dataTable').DataTable();
+        });
+        const canvas = new fabric.Canvas("imageCanvas", {
+            selection: true,
+        });
 
-    const rectangles = @(Model.Zones != null
+        const rectangles = @(Model.Zones != null
         ? Html.Raw(Json.Serialize(Model.Zones))
         : Html.Raw(Json.Serialize(new List<DocumentClassificationZonalOcr.Shared.Dtos.ZoneDto>()))
         );
-    const image = new Image();
-    image.src = "@Html.Raw(Model.ImagePath)";
-    const fieldsFromModel = fetchFields();
-    image.onload = function () {
-        // Set the canvas dimensions to match the image dimensions
-        canvas.setWidth(image.width);
-        canvas.setHeight(image.height);
+        function fetchFields() {
+            try {
+                const xhr = new XMLHttpRequest();
+                xhr.open("GET", `/Form/GetFields?formId=${@Model.FormId}`, false);
+                xhr.send();
 
-        canvas.setBackgroundImage(image.src, canvas.renderAll.bind(canvas), {
-            scaleX: canvas.width / image.width,
-            scaleY: canvas.height / image.height,
-        });
-
-        canvas.renderAll();
-        displaySavedRectangleData();
-    };
-    async function displaySavedRectangleData() {
-        const rectangleDataBody = document.getElementById("rectangleData");
-        // Clear the existing table rows
-        rectangleDataBody.innerHTML = "";
-
-
-
-        // Create a fieldOptions object from fieldsFromModel
-        const fieldOptions = {};
-        fieldsFromModel.forEach((field) => {
-            fieldOptions[field.FieldId] = field.FieldName;
-        });
-
-        // Add rectangles to the table starting from the second row (index 1)
-        for (let index = 0; index < rectangles.length; index++) {
-            const rectangle = rectangles[index];
-            const row = document.createElement("tr");
-
-
-            // Check if 'rectangle.Fields' is defined before accessing 'Value'
-            const fieldName = rectangle.Fields && rectangle.Fields.Value || 'Unknown Field';
-
-            // Check if it's an anchor point
-            const cellContent = rectangle.IsAnchorPoint ? 'Anchor Point' : fieldName;
-
-            row.innerHTML = `
-                <td>${rectangle.X}</td>
-                <td>${rectangle.Y}</td>
-                <td>${rectangle.Width}</td>
-                <td>${rectangle.Height}</td>
-                <td>${cellContent}</td>
-                <td>
-                    <button type="button" class="edit-button" data-index="${index}">Edit</button>
-                </td>
-            `;
-            rectangleDataBody.appendChild(row);
-        }
-
-        for (let i = 0; i < rectangles.length; i++) {
-            const rectangle = rectangles[i];
-            const rect = new fabric.Rect({
-                left: rectangle.X,
-                top: rectangle.Y,
-                width: rectangle.ActualWidth,
-                height: rectangle.ActualHeight,
-                fill: "transparent",
-                stroke: rectangle.IsAnchorPoint ? "red" : "blue",
-                strokeWidth: 2,
-                borderColor: rectangle.IsAnchorPoint ? "red" : "blue",
-                cornerColor: rectangle.IsAnchorPoint ? "red" : "blue",
-                cornerSize: 10,
-                selectable: true,
-            });
-            // Set a custom fieldId property for future reference
-            rect.fieldId = rectangle.FieldId;
-
-            // Add the rectangle to the canvas
-            canvas.add(rect);
-        }
-
-        // Attach click event handlers to the "Edit" buttons
-        const editButtons = document.querySelectorAll(".edit-button");
-        editButtons.forEach((button) => {
-            button.addEventListener("click", (event) => {
-                const index = event.target.getAttribute("data-index");
-                displayEditForm(rectangles[index]);
-            });
-        });
-    }
-    //rectangleData
-    async function displayRectangleData() {
-        const rectangleDataBody = document.getElementById("rectangleData");
-        // Clear the existing table rows
-        rectangleDataBody.innerHTML = "";
-
-
-
-        // Create a fieldOptions object from fieldsFromModel
-        const fieldOptions = {};
-        fieldsFromModel.forEach((field) => {
-            fieldOptions[field.FieldId] = field.FieldName;
-        });
-
-        // Add rectangles to the table starting from the second row (index 1)
-        for (let index = 0; index < rectangles.length; index++) {
-            const rectangle = rectangles[index];
-            const row = document.createElement("tr");
-
-
-            // Find the corresponding field name from fieldOptions
-            const fieldName = fieldOptions[rectangle.FieldId] || 'Unknown Field';
-            const cellContent = rectangle.IsAnchorPoint ? 'Anchor Point' : fieldName;
-            row.innerHTML = `
-            <td>${rectangle.X}</td>
-            <td>${rectangle.Y}</td>
-            <td>${rectangle.Width}</td>
-            <td>${rectangle.Height}</td>
-                <td>${cellContent}</td>
-            <td>
-                <button type="button" class="edit-button" data-index="${index}">Edit</button>
-            </td>
-        `;
-
-            rectangleDataBody.appendChild(row);
-        }
-
-        // Attach click event handlers to the "Edit" buttons
-        const editButtons = document.querySelectorAll(".edit-button");
-        editButtons.forEach((button) => {
-            button.addEventListener("click", (event) => {
-                const index = event.target.getAttribute("data-index");
-                displayEditForm(rectangles[index]);
-            });
-        });
-    }
-
-
-
-
-    // Define a variable to store the currently selected rectangle's index
-    let selectedRectangleIndex = null;
-
-    // Function to display the edit form with data
-    function displayEditForm(rectangle) {
-        // Set the selectedRectangleIndex to the index of the selected rectangle
-        selectedRectangleIndex = rectangles.indexOf(rectangle);
-
-        // Fill the edit form fields with the data of the selected rectangle
-        document.getElementById("regex").value = rectangle.Regex || "";
-        document.getElementById("whiteList").value = rectangle.WhiteList || "";
-        document.getElementById("isDuplicated").checked = rectangle.IsDuplicated || false;
-        document.getElementById("zoneFieldType").value = rectangle.Type || "1"; // Set a default value if null or empty
-
-        // Show the edit form
-        document.getElementById("rectangleForm").style.display = "block";
-
-        // If the selected rectangle is an anchor point, disable certain fields in the form
-        if (rectangle.IsAnchorPoint) {
-            document.getElementById("regex").disabled = true;
-            document.getElementById("whiteList").disabled = true;
-            document.getElementById("isDuplicated").disabled = true;
-            document.getElementById("zoneFieldType").disabled = true;
-        } else {
-            document.getElementById("regex").disabled = false;
-            document.getElementById("whiteList").disabled = false;
-            document.getElementById("isDuplicated").disabled = false;
-            document.getElementById("zoneFieldType").disabled = false;
-        }
-    }
-
-
-    // Save button click event handler
-    document.getElementById("saveRectangleData").addEventListener("click", () => {
-        // Update the selected rectangle's data
-        const updatedRectangle = {
-            Regex: document.getElementById("regex").value,
-            WhiteList: document.getElementById("whiteList").value,
-            IsDuplicated: document.getElementById("isDuplicated").checked,
-            Type: parseInt(document.getElementById("zoneFieldType").value),
-        };
-
-        // Update the rectangles array with the edited data
-        if (selectedRectangleIndex !== null) {
-            rectangles[selectedRectangleIndex] = updatedRectangle;
-        }
-
-        // Update the corresponding row in the table with the new data
-        if (selectedRectangleIndex !== null) {
-            const table = document.getElementById("rectangleData");
-            const rows = table.getElementsByTagName("tr");
-            const rowIndex = selectedRectangleIndex + 4; // Assuming you want to start from the fifth row
-
-            if (rowIndex < rows.length) {
-                const selectedRow = rows[rowIndex];
-
-                // Update the row's cell content
-                selectedRow.cells[0].innerText = updatedRectangle.Regex;
-                selectedRow.cells[1].innerText = updatedRectangle.WhiteList;
-                selectedRow.cells[2].innerText = updatedRectangle.IsDuplicated ? "Yes" : "No";
-                selectedRow.cells[3].innerText = getZoneFieldType(updatedRectangle.Type);
-            }
-        }
-
-        // Hide the edit form
-        document.getElementById("rectangleForm").style.display = "none";
-
-        // Clear the selectedRectangleIndex
-        selectedRectangleIndex = null;
-    });
-
-
-    // Cancel button click event handler
-    document.getElementById("cancelEdit").addEventListener("click", () => {
-        // Hide the edit form
-        document.getElementById("rectangleForm").style.display = "none";
-
-        // Clear the selectedRectangleIndex
-        selectedRectangleIndex = null;
-    });
-
-
-    // Update the table when an object is modified (moved or resized)
-    canvas.on("object:modified", (e) => {
-        const modifiedObject = e.target;
-        if (modifiedObject) {
-            const updatedRectangles = canvas.getObjects().map((obj) => {
-                if (obj.type === "rect") {
-                    return {
-                        X: obj.left,
-                        Y: obj.top,
-                        //Width: obj.width,
-                        //Height: obj.height,
-                        Width: obj.getScaledWidth(),
-                        Height: obj.getScaledHeight(),
-                        FieldId: obj.FieldId,
-                        IsAnchorPoint: obj.IsAnchorPoint || false,
-
-                    };
+                if (xhr.status === 200) {
+                    const fields = JSON.parse(xhr.responseText);
+                    return fields;
+                } else {
+                    console.error("Error fetching fields:", xhr.status, xhr.statusText);
+                    return null;
                 }
-            });
-
-            // Update the rectangles array
-            rectangles.length = 0; // Clear the existing rectangles
-            Array.prototype.push.apply(rectangles, updatedRectangles);
-
-            // Display updated data in the table
-            displayRectangleData();
-        }
-    });
-
-    let isDrawing = false;
-    let startX, startY;
-    let currentRect;
-    // Function to fetch the fields from the API
-    function fetchFields() {
-        try {
-            const xhr = new XMLHttpRequest();
-            xhr.open("GET", `/Form/GetFields?formId=${@Model.FormId}`, false);
-            xhr.send();
-
-            if (xhr.status === 200) {
-                const fields = JSON.parse(xhr.responseText);
-                return fields;
-            } else {
-                console.error("Error fetching fields:", xhr.status, xhr.statusText);
+            } catch (error) {
+                console.error("An error occurred while fetching fields:", error);
                 return null;
             }
-        } catch (error) {
-            console.error("An error occurred while fetching fields:", error);
-            return null;
         }
-    }
+    </script>
 
-    // Fetch the fields from the API
+    <script>
+        const formSampleId = @Model.Id;
+        const formId = @Model.Id;
+        document.getElementById("submitAllRectangles").addEventListener("click", submitAllRectangles);
+        async function submitAllRectangles() {
+            console.log(rectangles);
+            const allRectangleData = rectangles.map((rectangle) => {
+                console.log(rectangle);
+                return {
+                    X: rectangle.X ?? rectangle.x,
+                    Y: rectangle.Y ?? rectangle.y,
+                    ActualWidth: rectangle.Width ?? rectangle.actualWidth,
+                    ActualHeight: rectangle.Height ?? rectangle.actualHeight,
+                    ActualImageWidth: image.width,
+                    ActualImageHeight: image.height,
+                    FieldId: rectangle.FieldId ?? rectangle.fieldId,
 
-
-
-
-    canvas.on("mouse:down", async (options) => {
-        if (options.target && options.target !== currentRect) {
-            canvas.setActiveObject(options.target);
-        } else if (options.e.ctrlKey) {
-            canvas.discardActiveObject();
-            if (fieldsFromModel) {
-                const fieldOptions = {};
-                fieldsFromModel.forEach((field) => {
-                    fieldOptions[field.FieldId] = field.FieldName;
-                });
-
-                const { isConfirmed, value } = await Swal.fire({
-                    title: 'Select a Field or Set Anchor Point',
-                    showCancelButton: true,
-                    showConfirmButton: true,
-                    confirmButtonText: 'Select Field',
-                    showDenyButton: true,
-                    denyButtonText: 'Set Anchor Point',
-                    input: 'select',
-                    inputOptions: fieldOptions,
-                    inputPlaceholder: 'Select a field',
-                    inputValidator: (value) => {
-                        if (!value) {
-                            return 'You must select a field or set an anchor point';
-                        }
-                    }
-                });
-
-                if (isConfirmed) {
-                    // The "Select Field" button was clicked
-                    // Handle the selection logic here
-
-                    if (value) {
-                        const table = document.getElementById("rectangleData");
-                        let isDuplicatedInTable = false;
-                        for (let i = 0; i < table.rows.length; i++) {
-                            if (table.rows[i].cells[4].innerText === value) {
-                                isDuplicatedInTable = true;
-                                break;
-                            }
-                        }
-
-                        if (!isDuplicatedInTable) {
-                            const isDuplicatedInArray = rectangles.some(rectangle => rectangle.fieldId === value);
-                            if (!isDuplicatedInArray) {
-                                isDrawing = true;
-                                startX = options.e.clientX - canvas.getElement().getBoundingClientRect().left;
-                                startY = options.e.clientY - canvas.getElement().getBoundingClientRect().top;
-                                currentRect = new fabric.Rect({
-                                    left: startX,
-                                    top: startY,
-                                    width: 1,
-                                    height: 1,
-                                    fill: "transparent",
-                                    stroke: "blue",
-                                    strokeWidth: 2,
-                                    borderColor: "blue",
-                                    cornerColor: "blue",
-                                    cornerSize: 10,
-                                    selectable: true,
-                                    fieldId: value,
-                                    isAnchorPoint: false,
-                                });
-                                canvas.add(currentRect);
-                            } else {
-                                Swal.fire('Field Already Used', 'The selected field has already been used.', 'error');
-                            }
-                        } else {
-                            Swal.fire('Field Already in Table', 'The selected field is already in the table.', 'error');
-                        }
-                    }
-                } else if (isConfirmed === false) {
-
-
-                    isDrawing = true;
-                    startX = options.e.clientX - canvas.getElement().getBoundingClientRect().left;
-                    startY = options.e.clientY - canvas.getElement().getBoundingClientRect().top;
-                    currentRect = new fabric.Rect({
-                        left: startX,
-                        top: startY,
-                        width: 10,
-                        height: 10,
-                        fill: "transparent",
-                        stroke: "red",
-                        strokeWidth: 2,
-                        borderColor: "red",
-                        cornerColor: "red",
-                        cornerSize: 10,
-                        selectable: true,
-                        isAnchorPoint: true,
-                    });
-                    canvas.add(currentRect);
-                }
-            }
-        }
-    });
-
-
-    canvas.on("mouse:move", (options) => {
-        if (isDrawing) {
-            const x = options.e.clientX - canvas.getElement().getBoundingClientRect().left;
-            const y = options.e.clientY - canvas.getElement().getBoundingClientRect().top;
-            const width = x - startX;
-            const height = y - startY;
-            currentRect.set({ width: width, height: height });
-            canvas.renderAll();
-        }
-    });
-
-    canvas.on("mouse:up", () => {
-        isDrawing = false;
-
-        if (currentRect) {
-            // Check if both width and height are at least 10
-            if (currentRect.width >= 10 && currentRect.height >= 10) {
-                rectangles.push({
-                    X: currentRect.left,
-                    Y: currentRect.top,
-                    Width: currentRect.width,
-                    Height: currentRect.height,
-                    FieldId: currentRect.fieldId,
-                    IsAnchorPoint: currentRect.isAnchorPoint || false,
-                });
-
-                displayRectangleData();
-            } else {
-                // If the rectangle does not meet the minimum size requirement, remove it
-                canvas.remove(currentRect);
-            }
-
-            currentRect = null;
-        }
-    });
-    // Initial zoom level
-    let zoomLevel = 1;
-    let isAltKeyPressed = false;
-
-    // Listen for the Alt key press
-    window.addEventListener("keydown", (e) => {
-        if (e.key === "Alt") {
-            isAltKeyPressed = true;
-        }
-    });
-
-    // Listen for the Alt key release
-    window.addEventListener("keyup", (e) => {
-        if (e.key === "Alt") {
-            isAltKeyPressed = false;
-        }
-    });
-
-    canvas.on("mouse:wheel", (opt) => {
-        if (isAltKeyPressed) {
-            const delta = opt.e.deltaY;
-            let zoom = canvas.getZoom();
-            zoom = zoom - delta / 200;
-
-            // Set zoom limits (e.g., min zoom level to 0.5 and max zoom level to 2)
-            zoom = Math.max(0.5, Math.min(2, zoom));
-
-            canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
-
-            zoomLevel = zoom;
-            opt.e.preventDefault(); // Prevent the default scrolling behavior
-        }
-    });
-
-
-    let isPanning = false;
-    let lastPosX, lastPosY;
-    let isCtrlKeyHeld = false;
-
-    canvas.on("mouse:down", (options) => {
-        if (!options.target && !options.e.ctrlKey) {
-            isPanning = true;
-            lastPosX = options.e.clientX;
-            lastPosY = options.e.clientY;
-        }
-    });
-
-    canvas.on("mouse:up", (options) => {
-        if (isPanning) {
-            isPanning = false;
-        }
-    });
-
-    canvas.on("mouse:move", (options) => {
-        if (isPanning) {
-            const deltaX = options.e.clientX - lastPosX;
-            const deltaY = options.e.clientY - lastPosY;
-            lastPosX = options.e.clientX;
-            lastPosY = options.e.clientY;
-
-            canvas.relativePan(new fabric.Point(deltaX, deltaY));
-        }
-    });
-
-
-    // Listen for the Delete key press and remove selected objects
-    window.addEventListener("keydown", function (e) {
-        if (e.key === "Delete") {
-            const activeObject = canvas.getActiveObject();
-            if (activeObject) {
-                const confirmation = confirm("Are you sure you want to delete this object?");
-                if (confirmation) {
-                    canvas.remove(activeObject);
-
-                    // Remove the object from the rectangles array
-                    const index = rectangles.findIndex(rectangle => (
-                        rectangle.X === activeObject.left / zoomLevel,
-                        rectangle.Y === activeObject.top / zoomLevel,
-                        rectangle.Width === activeObject.getScaledWidth() / zoomLevel,
-                        rectangle.Height === activeObject.getScaledHeight() / zoomLevel
-                    ));
-                    if (index !== -1) {
-                        rectangles.splice(index, 1);
-                    }
-
-                    // Find the corresponding row in the table and remove it
-                    const table = document.getElementById("rectangleData");
-                    const rows = table.getElementsByTagName("tr");
-                    for (let i = 0; i < rows.length; i++) {
-                        const row = rows[i];
-                        if (row.cells[0].innerText === (activeObject.left / zoomLevel).toFixed(2) &&
-                            row.cells[1].innerText === (activeObject.top / zoomLevel).toFixed(2) &&
-                            row.cells[2].innerText === (activeObject.getScaledWidth() / zoomLevel).toFixed(2) &&
-                            row.cells[3].innerText === (activeObject.getScaledHeight() / zoomLevel).toFixed(2)) {
-                            table.deleteRow(i);
-                            break;
-                        }
-                    }
-                    // Update the rectangles array
-                    rectangles.length = 0;
-                    Array.prototype.push.apply(rectangles, updatedRectangles);
-                    displayRectangleData();
-                }
-            }
-        }
-    });
-    document.getElementById("submitAllRectangles").addEventListener("click", submitAllRectangles);
-    async function submitAllRectangles() {
-        const allRectangleData = rectangles.map((rectangle) => {
-
-            return {
-                X: rectangle.X,
-                Y: rectangle.Y,
-                ActualWidth: rectangle.Width,
-                ActualHeight: rectangle.Height,
-                ActualImageWidth: image.width,
-                ActualImageHeight: image.height,
-                FieldId: rectangle.IsAnchorPoint ? 0 : (rectangle.FieldId || rectangle.Fields.Id),
-
-                Regex: rectangle.Regex || '',
-                WhiteList: rectangle.WhiteList || '',
-                IsDuplicated: rectangle.IsDuplicated || false,
-                ZoneFieldType: rectangle.Type || 1,
-                TemplateImageId: @Model.Id,
-                IsAnchorPoint: rectangle.IsAnchorPoint,
-            };
-        });
-
-        try {
-            const response = await fetch("/TemplateDesigner/Forms/SubmitRectangleData", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(allRectangleData),
+                    Regex: rectangle.Regex ?? rectangle.regex,
+                    WhiteList: rectangle.WhiteList ?? rectangle.whiteList,
+                    IsDuplicated: rectangle.IsDuplicated ?? rectangle.isDuplicated,
+                    ZoneFieldType: rectangle.Type ?? rectangle.type,
+                    TemplateImageId: @Model.Id,
+                    IsAnchorPoint: rectangle.IsAnchorPoint ?? rectangle.isAnchorPoint,
+                };
             });
-
-            if (response.ok) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Rectangles Submitted!',
-                    text: 'All rectangle data submitted successfully.',
+            console.log(allRectangleData);
+            try {
+                const response = await fetch("/FormSample/SubmitRectangleData", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        id: formSampleId,
+                        formId: formId,
+                        rectangles: allRectangleData
+                    }),
                 });
 
-
-                //rectangles.length = 0;
-
-
-
-            } else {
-                // Display error message using SweetAlert
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Rectangles Submitted!',
+                        text: 'All rectangle data submitted successfully.',
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: `Error submitting rectangle data: ${response.status} - ${response.statusText}`,
+                    });
+                }
+            } catch (error) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error!',
-                    text: `Error submitting rectangle data: ${response.status} - ${response.statusText}`,
+                    text: `An error occurred while submitting rectangle data: ${error.message}`,
                 });
             }
-        } catch (error) {
-            // Display error message using SweetAlert
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: `An error occurred while submitting rectangle data: ${error.message}`,
-            });
         }
-    }
+    </script>
+    <script src="~/custom/rectangles.js"></script>
+    <script>
+        const image = new Image();
+        image.src = "@Html.Raw(Model.ImagePath)";
+        image.onload = function () {
+            canvas.setWidth(image.width);
+            canvas.setHeight(image.height);
 
-</script>
+            canvas.setBackgroundImage(image.src, canvas.renderAll.bind(canvas), {
+                scaleX: canvas.width / image.width,
+                scaleY: canvas.height / image.height,
+            });
+
+            canvas.renderAll();
+            displaySavedRectangleData();
+        };
+
+    </script>
 }

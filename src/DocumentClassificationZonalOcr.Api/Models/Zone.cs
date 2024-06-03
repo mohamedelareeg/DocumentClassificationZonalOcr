@@ -157,6 +157,6 @@ namespace DocumentClassificationZonalOcr.Api.Models
             AnchorPointPath = anchorPointPath;
             return Result.Success(true);
         }
-
+     
     }
 }

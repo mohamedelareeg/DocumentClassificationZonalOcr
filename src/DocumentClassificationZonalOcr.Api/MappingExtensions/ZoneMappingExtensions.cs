@@ -18,7 +18,7 @@ namespace DocumentClassificationZonalOcr.Api.MappingExtensions
                 ActualHeight = zone.ActualHeight,
                 ActualImageWidth = zone.ActualImageWidth,
                 ActualImageHeight = zone.ActualImageHeight,
-                FieldId = zone.FieldId ?? 0, 
+                FieldId = zone.FieldId ?? 0,
                 Regex = zone.Regex,
                 WhiteList = zone.WhiteList,
                 IsDuplicated = zone.IsDuplicated,

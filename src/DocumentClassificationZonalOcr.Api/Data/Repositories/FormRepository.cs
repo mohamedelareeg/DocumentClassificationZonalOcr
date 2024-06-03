@@ -75,8 +75,7 @@ namespace DocumentClassificationZonalOcr.Api.Data.Repositories
 
             int totalCount = await query.CountAsync();
 
-            // Calculate total pages
-            int totalPages = (int)Math.Ceiling((double)totalCount / options.Length);
+            int totalPages = totalCount > 0 ? (int)Math.Ceiling((double)totalCount / options.Length) : 0;
 
             var forms = await query
                 .Skip(options.Start)
@@ -103,8 +102,7 @@ namespace DocumentClassificationZonalOcr.Api.Data.Repositories
                 }
 
                 int totalCount = await query.CountAsync();
-
-                int totalPages = (int)Math.Ceiling((double)totalCount / options.Length);
+                int totalPages = totalCount > 0 ? (int)Math.Ceiling((double)totalCount / options.Length) : 0;
 
                 var fields = await query
                     .Skip(options.Start)
@@ -134,7 +132,7 @@ namespace DocumentClassificationZonalOcr.Api.Data.Repositories
 
                 int totalCount = await query.CountAsync();
 
-                int totalPages = (int)Math.Ceiling((double)totalCount / options.Length);
+                int totalPages = totalCount > 0 ? (int)Math.Ceiling((double)totalCount / options.Length) : 0;
 
                 var formSamples = await query
                     .Skip(options.Start)

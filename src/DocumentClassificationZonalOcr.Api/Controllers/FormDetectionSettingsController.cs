@@ -2,12 +2,12 @@
 using DocumentClassificationZonalOcr.Api.Services.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using CaptureSolution.AutomaticReleaseApi.Controllers.Base;
 
 namespace DocumentClassificationZonalOcr.Api.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
-    public class FormDetectionSettingsController : ControllerBase
+    public class FormDetectionSettingsController : AppControllerBase
     {
         private readonly IFormDetectionSettingService _formDetectionSettingService;
 
@@ -21,10 +21,7 @@ namespace DocumentClassificationZonalOcr.Api.Controllers
         public async Task<IActionResult> GetSettings()
         {
             var result = await _formDetectionSettingService.GetSettingsAsync();
-            if (result.IsFailure)
-                return BadRequest(result.Error);
-
-            return Ok(result.Value);
+            return CustomResult(result);
         }
 
         [HttpPost]
@@ -32,10 +29,7 @@ namespace DocumentClassificationZonalOcr.Api.Controllers
         public async Task<IActionResult> UpdateSettings(FormDetectionSettingDto settings)
         {
             var result = await _formDetectionSettingService.UpdateSettingsAsync(settings);
-            if (result.IsFailure)
-                return BadRequest(result.Error);
-
-            return Ok(result.Value);
+            return CustomResult(result);
         }
     }
 }

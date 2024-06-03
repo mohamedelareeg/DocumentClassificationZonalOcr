@@ -44,6 +44,15 @@ public class BaseResponse<T>
             Errors = new List<string> { errorMessage }
         };
     }
+    public static BaseResponse<T> Success(T data = default)
+    {
+        return new BaseResponse<T>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Succeeded = true,
+            Data = data
+        };
+    }
 
     public HttpStatusCode StatusCode { get; set; }
     public object Meta { get; set; }

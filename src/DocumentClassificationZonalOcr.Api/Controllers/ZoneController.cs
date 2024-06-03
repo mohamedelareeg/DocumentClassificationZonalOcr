@@ -3,12 +3,12 @@ using DocumentClassificationZonalOcr.Api.Models;
 using DocumentClassificationZonalOcr.Api.Results;
 using DocumentClassificationZonalOcr.Api.Services.Abstractions;
 using Microsoft.AspNetCore.Mvc;
+using CaptureSolution.AutomaticReleaseApi.Controllers.Base;
 
 namespace DocumentClassificationZonalOcr.Api.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
-    public class ZoneController : ControllerBase
+    public class ZoneController : AppControllerBase
     {
         private readonly IZoneService _zoneService;
 
@@ -18,39 +18,24 @@ namespace DocumentClassificationZonalOcr.Api.Controllers
         }
 
         [HttpPut("{zoneId}")]
-        public async Task<ActionResult<Result<bool>>> ModifyZonePropertiesAsync(int zoneId, [FromBody] ZoneDto zoneDto)
+        public async Task<IActionResult> ModifyZonePropertiesAsync(int zoneId, [FromBody] ZoneDto zoneDto)
         {
             var result = await _zoneService.ModifyZonePropertiesAsync(zoneId, zoneDto);
-            if (result.IsFailure)
-            {
-                return BadRequest(result.Error);
-            }
-
-            return Ok(result.Value);
+            return CustomResult(result);
         }
 
         [HttpDelete("{zoneId}")]
-        public async Task<ActionResult<Result<bool>>> DeleteZoneAsync(int zoneId)
+        public async Task<IActionResult> DeleteZoneAsync(int zoneId)
         {
             var result = await _zoneService.DeleteZoneAsync(zoneId);
-            if (result.IsFailure)
-            {
-                return BadRequest(result.Error);
-            }
-
-            return Ok(result.Value);
+            return CustomResult(result);
         }
 
         [HttpGet("{zoneId}")]
-        public async Task<ActionResult<Result<Zone>>> GetZoneByIdAsync(int zoneId)
+        public async Task<IActionResult> GetZoneByIdAsync(int zoneId)
         {
             var result = await _zoneService.GetZoneByIdAsync(zoneId);
-            if (result.IsFailure)
-            {
-                return NotFound(result.Error);
-            }
-
-            return Ok(result.Value);
+            return CustomResult(result);
         }
     }
 }

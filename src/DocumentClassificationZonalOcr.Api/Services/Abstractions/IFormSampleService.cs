@@ -11,5 +11,6 @@ namespace DocumentClassificationZonalOcr.Api.Services.Abstractions
         Task<Result<bool>> AddZoneAsync(int formSampleId, ZoneRequestDto zone);
         Task<Result<FormSampleDto>> GetFormSampleByIdAsync(int formSampleId);
         Task<Result<bool>> RemoveFormSampleAsync(int formSampleId);
+        Task<Result<bool>> RemoveAllZonesAsync(int formSampleId);
     }
 }

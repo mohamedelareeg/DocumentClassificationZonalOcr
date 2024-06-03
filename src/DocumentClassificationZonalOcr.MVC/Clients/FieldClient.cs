@@ -11,19 +11,19 @@ namespace DocumentClassificationZonalOcr.MVC.Clients
         {
         }
 
-        public async Task<FieldDto> GetFieldByIdAsync(int fieldId)
+        public async Task<BaseResponse<FieldDto>> GetFieldByIdAsync(int fieldId)
         {
-            return await GetAsync<FieldDto>($"api/Field/{fieldId}");
+            return await GetAsync<BaseResponse<FieldDto>>($"api/Field/{fieldId}");
         }
 
-        public async Task<bool> ModifyFieldAsync(int fieldId, string newName)
+        public async Task<BaseResponse<bool>> ModifyFieldAsync(int fieldId, string newName)
         {
-            return await PutAsync<string, bool>($"api/Field/{fieldId}", newName);
+            return await PutAsync<string, BaseResponse<bool>>($"api/Field/{fieldId}", newName);
         }
 
-        public async Task<bool> RemoveFieldAsync(int fieldId)
+        public async Task<BaseResponse<bool>> RemoveFieldAsync(int fieldId)
         {
-            return await DeleteAsync<bool>($"api/Field/{fieldId}");
+            return await DeleteAsync<BaseResponse<bool>>($"api/Field/{fieldId}");
         }
     }
 }

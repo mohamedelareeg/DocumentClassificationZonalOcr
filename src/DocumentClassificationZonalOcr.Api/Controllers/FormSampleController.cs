@@ -1,4 +1,5 @@
-﻿using DocumentClassificationZonalOcr.Api.Results;
+﻿using CaptureSolution.AutomaticReleaseApi.Controllers.Base;
+using DocumentClassificationZonalOcr.Api.Results;
 using DocumentClassificationZonalOcr.Api.Services.Abstractions;
 using DocumentClassificationZonalOcr.Shared.Dtos;
 using DocumentClassificationZonalOcr.Shared.Requests;
@@ -6,9 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DocumentClassificationZonalOcr.Api.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
-    public class FormSampleController : ControllerBase
+    public class FormSampleController : AppControllerBase
     {
         private readonly IFormSampleService _formSampleService;
 
@@ -17,56 +17,45 @@ namespace DocumentClassificationZonalOcr.Api.Controllers
             _formSampleService = formSampleService;
         }
 
-
         [HttpPut("{formSampleId}")]
-        public async Task<ActionResult<Result<bool>>> ModifyFormSampleImage(int formSampleId, [FromForm] IFormFile newImage)
+        public async Task<IActionResult> ModifyFormSampleImage(int formSampleId, [FromForm] IFormFile newImage)
         {
             var result = await _formSampleService.ModifyFormSampleImageAsync(formSampleId, newImage);
-            if (result.IsFailure)
-                return BadRequest(result.Error);
-
-            return Ok(result.Value);
+            return CustomResult(result);
         }
 
         [HttpGet("{formSampleId}/zones")]
-        public async Task<ActionResult<Result<IEnumerable<ZoneDto>>>> GetAllZones(int formSampleId)
+        public async Task<IActionResult> GetAllZones(int formSampleId)
         {
             var result = await _formSampleService.GetAllZonesAsync(formSampleId);
-            if (result.IsFailure)
-                return NotFound(result.Error);
-
-            return Ok(result.Value);
+            return CustomResult(result);
         }
 
         [HttpPost("{formSampleId}/zones")]
-        public async Task<ActionResult<Result<bool>>> AddZone(int formSampleId, [FromBody] ZoneRequestDto zone)
+        public async Task<IActionResult> AddZone(int formSampleId, [FromBody] ZoneRequestDto zone)
         {
             var result = await _formSampleService.AddZoneAsync(formSampleId, zone);
-            if (result.IsFailure)
-                return BadRequest(result.Error);
-
-            return Ok(result.Value);
+            return CustomResult(result);
+        }
+        [HttpDelete("{formSampleId}/zones")]
+        public async Task<IActionResult> RemoveAllZones(int formSampleId)
+        {
+            var result = await _formSampleService.RemoveAllZonesAsync(formSampleId);
+            return CustomResult(result);
         }
 
-
         [HttpGet("{formSampleId}")]
-        public async Task<ActionResult<Result<FormSampleDto>>> GetFormSampleById(int formSampleId)
+        public async Task<IActionResult> GetFormSampleById(int formSampleId)
         {
             var result = await _formSampleService.GetFormSampleByIdAsync(formSampleId);
-            if (result.IsFailure)
-                return NotFound(result.Error);
-
-            return Ok(result.Value);
+            return CustomResult(result);
         }
 
         [HttpDelete("{formSampleId}")]
-        public async Task<ActionResult<Result<bool>>> RemoveFormSample(int formSampleId)
+        public async Task<IActionResult> RemoveFormSample(int formSampleId)
         {
             var result = await _formSampleService.RemoveFormSampleAsync(formSampleId);
-            if (!result.IsFailure)
-                return BadRequest(result.Error);
-
-            return Ok(result.Value);
+            return CustomResult(result);
         }
     }
 }
