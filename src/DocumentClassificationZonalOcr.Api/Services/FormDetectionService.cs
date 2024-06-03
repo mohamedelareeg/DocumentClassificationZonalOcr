@@ -19,12 +19,12 @@ namespace DocumentClassificationZonalOcr.Api.Services
             _zoneRepository = zoneRepository;
         }
 
-        public async Task<Result<bool>> DetectFormAsync(Bitmap image, FormDetectionSetting formDetectionSetting)
+        public async Task<Result<int>> DetectFormAsync(Bitmap image, FormDetectionSetting formDetectionSetting)
         {
             var anchorPointsResult = await _zoneRepository.GetAllAnchorPointsAsync();
 
             if (anchorPointsResult.IsFailure)
-                return Result.Failure<bool>(anchorPointsResult.Error);
+                return Result.Failure<int>(anchorPointsResult.Error);
 
             var anchorPoints = anchorPointsResult.Value;
             using (var inputMat = BitmapConverter.ToMat(image))
@@ -44,31 +44,35 @@ namespace DocumentClassificationZonalOcr.Api.Services
 
                             if (maxVal >= threshold)
                             {
-                                int allowanceWidth = 100;
-                                int allowanceHeight = 100;
-                                int searchX = maxLoc.X - allowanceWidth;
-                                int searchY = maxLoc.Y - allowanceHeight;
-                                int searchWidth = anchorMat.Width + 2 * allowanceWidth;
-                                int searchHeight = anchorMat.Height + 2 * allowanceHeight;
+                                //For Testing Purpose
+                                //int allowanceWidth = 100;
+                                //int allowanceHeight = 100;
+                                //int searchX = maxLoc.X - allowanceWidth;
+                                //int searchY = maxLoc.Y - allowanceHeight;
+                                //int searchWidth = anchorMat.Width + 2 * allowanceWidth;
+                                //int searchHeight = anchorMat.Height + 2 * allowanceHeight;
 
-                                searchX = Math.Max(0, searchX);
-                                searchY = Math.Max(0, searchY);
-                                searchWidth = Math.Min(inputMat.Width - searchX, searchWidth);
-                                searchHeight = Math.Min(inputMat.Height - searchY, searchHeight);
-                                Rect searchRect = new Rect(searchX, searchY, searchWidth, searchHeight);
+                                //searchX = Math.Max(0, searchX);
+                                //searchY = Math.Max(0, searchY);
+                                //searchWidth = Math.Min(inputMat.Width - searchX, searchWidth);
+                                //searchHeight = Math.Min(inputMat.Height - searchY, searchHeight);
+                                //Rect searchRect = new Rect(searchX, searchY, searchWidth, searchHeight);
 
-                                inputMat.Rectangle(searchRect, Scalar.Red, 2);
+                                //inputMat.Rectangle(searchRect, Scalar.Red, 2);
 
-                                Console.WriteLine($"Anchor point found: {anchorPoint.AnchorPointPath}");
-                                Console.WriteLine($"Position: {maxLoc}");
-                                Console.WriteLine($"Search region: {searchRect}");
+                                //Console.WriteLine($"Anchor point found: {anchorPoint.AnchorPointPath}");
+                                //Console.WriteLine($"Position: {maxLoc}");
+                                //Console.WriteLine($"Search region: {searchRect}");
+                                return Result.Success(anchorPoint.FormSampleId);
                             }
+
                         }
                     }
                 }
+                return 0;
             }
 
-            return Result.Success(true);
+           
         }
     }
 }

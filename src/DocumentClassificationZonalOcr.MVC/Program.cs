@@ -13,6 +13,7 @@ builder.Services.AddHttpClient("ApiClient", client =>
 });
 builder.Services.AddScoped<IFormClient, FormClient>();
 builder.Services.AddScoped<IFormSampleClient, FormSampleClient>();
+builder.Services.AddScoped<IPaperClient, PaperClient>();
 builder.Services.AddSession(options =>
 {
     // Configure session options here, if needed

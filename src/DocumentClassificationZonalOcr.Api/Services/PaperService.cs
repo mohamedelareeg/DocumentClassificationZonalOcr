@@ -2,6 +2,7 @@
 using DocumentClassificationZonalOcr.Api.Models;
 using DocumentClassificationZonalOcr.Api.Results;
 using DocumentClassificationZonalOcr.Api.Services.Abstractions;
+using DocumentClassificationZonalOcr.Shared.Enums;
 using Microsoft.AspNetCore.Http;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
@@ -22,19 +23,22 @@ namespace DocumentClassificationZonalOcr.Api.Services
         private readonly IImageEnhancementService _imageEnhancementService;
         private readonly IFormDetectionSettingsRepository _formDetectionSettingsRepository;
         private readonly IFormDetectionService _formDetectionService;
+        private readonly IOcrService _ocrService;
 
         public PaperService(
             IPaperRepository paperRepository,
             IExportedMetaDataRepository exportedMetaDataRepository,
             IImageEnhancementService imageEnhancementService,
             IFormDetectionSettingsRepository formDetectionSettingsRepository,
-            IFormDetectionService formDetectionService)
+            IFormDetectionService formDetectionService,
+            IOcrService ocrService)
         {
             _paperRepository = paperRepository;
             _exportedMetaDataRepository = exportedMetaDataRepository;
             _imageEnhancementService = imageEnhancementService;
             _formDetectionSettingsRepository = formDetectionSettingsRepository;
             _formDetectionService = formDetectionService;
+            _ocrService = ocrService;
         }
 
         public async Task<Result<IEnumerable<Paper>>> GetAllPapersByFormIdAsync(int formId)
@@ -135,9 +139,25 @@ namespace DocumentClassificationZonalOcr.Api.Services
 
                     bitmap = normalizationResult.Value;
                 }
+
                 var formDetectionResult = await _formDetectionService.DetectFormAsync(bitmap, formDetectionSetting);
                 if (formDetectionResult.IsFailure)
                     return Result.Failure<bool>(formDetectionResult.Error);
+
+                if (formDetectionResult.Value == 0)
+                {
+                    return Result.Success(true);
+                }
+
+                var formSampleId = formDetectionResult.Value;
+                
+                var formSampleResult = await _ocrService.OcrImageAsync(formSampleId , bitmap, formDetectionSetting);
+                if (formSampleResult.IsFailure)
+                    return Result.Failure<bool>(formSampleResult.Error);
+
+                var formSample = formSampleResult.Value;
+
+
 
             }
 
@@ -172,6 +192,36 @@ namespace DocumentClassificationZonalOcr.Api.Services
                 return Result.Failure<bool>(formDetectionSettingsResult.Error);
 
             var formDetectionSettings = formDetectionSettingsResult.Value;
+            if(formDetectionSettingsResult.Value is null)
+            {
+                var defaultSettings = FormDetectionSetting.Create(
+                      OcrEngine.TesseractOcr,
+                      5,
+                      DetectOptions.FullImage,
+                      0,
+                      0,
+                      DetectAlgorithm.SIFT,
+                      false,
+                      false,
+                      false,
+                      false,
+                      false,
+                      false,
+                      false
+                  );
+                if (defaultSettings.IsFailure)
+                    return Result.Failure<bool>(defaultSettings.Error);
+
+                var addSettingsResult = await _formDetectionSettingsRepository.UpdateSettingsAsync(defaultSettings.Value);
+                if (addSettingsResult.IsFailure)
+                    return Result.Failure<bool>(addSettingsResult.Error);
+
+                formDetectionSettingsResult = await _formDetectionSettingsRepository.GetSettingsAsync();
+                if (formDetectionSettingsResult.IsFailure)
+                    return Result.Failure<bool>(formDetectionSettingsResult.Error);
+
+                formDetectionSettings = formDetectionSettingsResult.Value;
+            }
             foreach (var image in images)
             {
                 var result = await ProcessSingleImageAsync(image, formDetectionSettings);

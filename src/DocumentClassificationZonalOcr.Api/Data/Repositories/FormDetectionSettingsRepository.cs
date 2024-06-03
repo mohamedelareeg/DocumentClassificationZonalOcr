@@ -35,7 +35,7 @@ namespace DocumentClassificationZonalOcr.Api.Data.Repositories
         {
             var existingSettings = _context.Set<FormDetectionSetting>().FirstOrDefault();
 
-            if (existingSettings == null)
+            if (existingSettings is null)
             {
                 _context.Set<FormDetectionSetting>().Add(settings);
             }

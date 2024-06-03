@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using DocumentClassificationZonalOcr.Api.Data.Repositories;
 using DocumentClassificationZonalOcr.Api.Data.Repositories.Abstractions;
+using Microsoft.AspNetCore.Http.Metadata;
 
 namespace DocumentClassificationZonalOcr.Api
 {
@@ -37,7 +38,7 @@ namespace DocumentClassificationZonalOcr.Api
             services.AddScoped<IImageEnhancementService, ImageEnhancementService>();
             services.AddScoped<IFormDetectionSettingService, FormDetectionSettingService>();
             services.AddScoped<IFormDetectionService, FormDetectionService>();
-
+            services.AddScoped<IOcrService, OcrService>();
             return services;
         }
     }

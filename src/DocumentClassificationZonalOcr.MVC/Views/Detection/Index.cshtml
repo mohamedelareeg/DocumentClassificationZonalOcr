@@ -1,0 +1,153 @@
+﻿@model List<IFormFile>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+<style>
+    .upload-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        border: 2px dashed #ccc;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .upload-button {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-bottom: 20px;
+    }
+
+    .image-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .image-preview {
+        width: 150px;
+        height: 150px;
+        overflow: hidden;
+        border-radius: 5px;
+        position: relative;
+    }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .delete-button {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: #fff;
+        border: none;
+        padding: 5px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        .delete-button:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+</style>
+
+<div class="upload-container">
+    <label for="images" class="upload-button">Choose Images</label>
+    <input type="file" name="images" id="images" multiple onchange="previewImages(event)" style="display: none" />
+    <div class="image-container" id="image-preview"></div>
+    <button type="submit" class="upload-button" onclick="uploadImages()">Upload</button>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    var uploadedImages = [];
+
+    function previewImages(event) {
+        var preview = document.getElementById('image-preview');
+        preview.innerHTML = '';
+        var files = event.target.files;
+
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            uploadedImages.push(file);
+
+            var reader = new FileReader();
+
+            reader.onload = function (event) {
+                var div = document.createElement('div');
+                div.classList.add('image-preview');
+
+                var img = document.createElement('img');
+                img.src = event.target.result;
+                div.appendChild(img);
+
+                var deleteBtn = document.createElement('button');
+                deleteBtn.innerText = 'X';
+                deleteBtn.classList.add('delete-button');
+                deleteBtn.onclick = function () {
+                    var index = Array.from(preview.children).indexOf(div);
+                    uploadedImages.splice(index, 1);
+                    div.remove();
+                };
+                div.appendChild(deleteBtn);
+
+                preview.appendChild(div);
+            }
+
+            reader.readAsDataURL(file);
+        }
+    }
+
+    async function uploadImages() {
+        try {
+            const formData = new FormData();
+            uploadedImages.forEach((image) => {
+                formData.append('files', image);
+            });
+
+            const response = await fetch('/Detection/upload', {
+                method: 'POST',
+                body: formData,
+                onUploadProgress: function (progressEvent) {
+                    const percentCompleted = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                    Swal.update({
+                        title: 'Uploading...',
+                        html: `Progress: ${percentCompleted}%`,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to upload images');
+            }
+
+            const result = await response.json();
+            Swal.fire({
+                icon: 'success',
+                title: 'Upload Complete',
+                text: 'Images uploaded successfully!'
+            });
+        } catch (error) {
+            console.error(error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Upload Failed',
+                text: 'Failed to upload images. Please try again.'
+            });
+        }
+    }
+</script>

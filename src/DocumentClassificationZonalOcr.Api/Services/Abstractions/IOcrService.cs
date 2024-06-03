@@ -4,8 +4,8 @@ using System.Drawing;
 
 namespace DocumentClassificationZonalOcr.Api.Services.Abstractions
 {
-    public interface IFormDetectionService
+    public interface IOcrService
     {
-        Task<Result<int>> DetectFormAsync(Bitmap image, FormDetectionSetting formDetectionSetting);
+        Task<Result<bool>> OcrImageAsync(int formSampleId, Bitmap bitmap, FormDetectionSetting formDetectionSetting);
     }
 }
