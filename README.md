@@ -17,13 +17,6 @@ This project is a .NET Core 8 web application that facilitates document classifi
 - **OpenCV Integration:** Utilizes OpenCV for image processing and assisting in the OCR process.
 - **Field Mapping:** Extracted text is assigned to the corresponding indexing fields based on predefined mappings.
 
-## Technologies Used
-
-### Programming Languages
-- **C#:** The primary language for backend development.
-- **HTML, CSS, JavaScript:** Utilized for frontend development.
-
-
 ## Project Structure
 
 The project follows a typical ASP.NET Core web application structure:
