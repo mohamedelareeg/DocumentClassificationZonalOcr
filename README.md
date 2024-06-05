@@ -1,6 +1,8 @@
 # Document Classification with Zonal OCR
 
-[![Watch the video](https://img.youtube.com/vi/zibVcrxsx9c/maxresdefault.jpg)](https://www.youtube.com/watch?v=zibVcrxsx9c)
+To watch a demo of the project, click [here](https://www.youtube.com/watch?v=zibVcrxsx9c).
+
+[![Watch the video](https://img.youtube.com/vi/zibVcrxsx9c/0.jpg)](https://www.youtube.com/watch?v=zibVcrxsx9c)
 
 This project is a .NET Core 8 web application that facilitates document classification and Zonal OCR (Optical Character Recognition). It allows users to define document types, create fields within these documents (indexing fields), upload sample documents for training, define anchor points to assist in document detection, and perform OCR to extract text from documents based on the defined fields.
 
@@ -13,7 +15,6 @@ This project is a .NET Core 8 web application that facilitates document classifi
 
 ### OCR (Optical Character Recognition)
 - **OpenCV Integration:** Utilizes OpenCV for image processing and assisting in the OCR process.
-- **Multiple OCR Engines:** Supports integration with multiple OCR engines for extracting text from documents.
 - **Field Mapping:** Extracted text is assigned to the corresponding indexing fields based on predefined mappings.
 
 ## Technologies Used
@@ -22,21 +23,6 @@ This project is a .NET Core 8 web application that facilitates document classifi
 - **C#:** The primary language for backend development.
 - **HTML, CSS, JavaScript:** Utilized for frontend development.
 
-### Frameworks and Libraries
-- **ASP.NET Core:** Used for building web APIs and MVC applications.
-- **Entity Framework Core:** Provides ORM capabilities for interacting with the database.
-- **OpenCvSharp:** Integrates OpenCV functionality for image processing tasks.
-- **Serilog:** Used for logging within the application.
-- **SixLabors.ImageSharp:** Used for image manipulation and processing.
-- **Swashbuckle.AspNetCore:** Implements Swagger/OpenAPI for API documentation.
-- **Tesseract:** Provides OCR capabilities for text extraction from images.
-
-### Database
-- **Microsoft SQL Server:** Utilized as the relational database management system.
-
-### Development Tools
-- **Visual Studio 2019:** Used as the integrated development environment (IDE) for project development.
-- **Docker:** Used for containerization of the application.
 
 ## Project Structure
 
@@ -50,7 +36,6 @@ The project follows a typical ASP.NET Core web application structure:
 - **Microsoft.EntityFrameworkCore:** ORM for database interactions.
 - **OpenCvSharp4:** OpenCV wrapper for image processing tasks.
 - **Serilog.AspNetCore:** Logging framework for ASP.NET Core applications.
-- **Swashbuckle.AspNetCore:** Middleware for Swagger/OpenAPI integration.
 - **SixLabors.ImageSharp:** Image processing library.
 - **Tesseract:** OCR engine for text extraction from images.
 
