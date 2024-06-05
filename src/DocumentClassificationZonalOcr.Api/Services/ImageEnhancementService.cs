@@ -440,17 +440,6 @@ namespace DocumentClassificationZonalOcr.Api.Services
                     g.DrawImage(processedImage, new System.Drawing.Rectangle(0, 0, cropWidth, cropHeight), new System.Drawing.Rectangle(cropX, cropY, cropWidth, cropHeight), GraphicsUnit.Pixel);
                 }
 
-                #region Testing Only
-                string tempDir = @"C:\temp";
-                if (!Directory.Exists(tempDir))
-                {
-                    Directory.CreateDirectory(tempDir);
-                }
-
-                string tempFilePath = Path.Combine(tempDir, $"{Guid.NewGuid()}.bmp");
-
-                croppedImage.Save(tempFilePath, System.Drawing.Imaging.ImageFormat.Bmp);
-                #endregion
                 return Result.Success(croppedImage);
             }
             catch (Exception ex)

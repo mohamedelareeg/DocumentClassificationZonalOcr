@@ -11,5 +11,6 @@ namespace DocumentClassificationZonalOcr.Shared.Requests
         public int FieldId { get; set; }
         public string Value { get; set; }
         public int PaperId { get; set; }
+        public string FilePath { get; set; }
     }
 }

@@ -1,22 +1,25 @@
-﻿@{
-    ViewData["Title"] = "Forms";
+﻿@model int
+@{
+    ViewData["Title"] = "Form Fields";
 }
 
-<div class="container mx-2">
+<div class="d-flex justify-content-between mb-3">
     <div>
-        <a href="@Url.Action("AddEdit", "Form")" class="btn btn-success">Create New</a>
+        <a href="@Url.Action("Index", "Form")" class="btn btn-info">Back to Form List</a>
+    </div>
+    <div>
+        <a href="@Url.Action("AddEdit", "Field", new { formId = Model })" class="btn btn-success">Add New Field</a>
     </div>
 </div>
 
 <div class="container mx-2">
-    <table id="OperationsTable" class="table table-striped table-bordered" style="width:100%">
+    <table id="FieldsTable" class="table table-striped table-bordered" style="width:100%">
         <thead>
             <tr>
                 <th>#</th>
                 <th>Name</th>
-                <th>Fields</th>
-                <th>Form Detection</th>
-                <th>Action</th>
+                <th>Type</th>
+                <th>Edit</th>
                 <th>Delete</th>
             </tr>
         </thead>
@@ -31,11 +34,12 @@
 
     <script>
         $(document).ready(function () {
-            var table = $('#OperationsTable').DataTable({
+            // DataTable initialization
+            var table = $('#FieldsTable').DataTable({
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
-                    "url": "@Url.Action("LoadData", "Form")",
+                    "url": "@Url.Action("LoadData", "Field", new { formId = Model })",
                     "type": "POST",
                     "contentType": "application/json; charset=utf-8",
                     "data": function (d) {
@@ -53,46 +57,34 @@
                 "columns": [
                     { "data": "serial" },
                     { "data": "name" },
+                    { "data": "type" },
                     {
                         "data": null,
                         "render": function (data, type, row) {
-                            return '<a href="@Url.Action("Index", "Field")?formId=' + row.id + '" class="btn btn-secondary">Fields</a>';
+                            return '<a href="@Url.Action("AddEdit", "Field", new { id = "__id__", formId = Model })" class="btn btn-primary">Edit</a>'
+                                .replace("__id__", row.id);
                         }
                     },
                     {
                         "data": null,
                         "render": function (data, type, row) {
-                            return '<a href="@Url.Action("index", "FormSample")?formId=' + row.id + '" class="btn btn-info">Samples</a>';
-                        }
-                    },
-                    {
-                        "data": null,
-                        "render": function (data, type, row) {
-                            return '<a href="@Url.Action("AddEdit", "Form")?id=' + row.id + '" class="btn btn-primary">Edit</a>';
-                        }
-                    },
-                   
-                   
-                    {
-                        "data": null,
-                        "render": function (data, type, row) {
-                            return '<button onclick="deleteForm(' + row.id + ')" class="btn btn-danger">Delete</button>';
+                            return '<button onclick="deleteField(' + row.id + ')" class="btn btn-danger">Delete</button>';
                         }
                     }
                 ]
             });
-        });
 
-        function deleteForm(id) {
-            if (confirm("Are you sure you want to delete this form?")) {
+        });
+        function deleteField(id) {
+            if (confirm("Are you sure you want to delete this Field?")) {
                 $.ajax({
-                    url: '@Url.Action("Delete", "Form")/' + id,
+                    url: '@Url.Action("Delete", "Field")/' + id,
                     type: 'DELETE',
                     success: function (result) {
-                        $('#OperationsTable').DataTable().ajax.reload();
+                        $('#FieldsTable').DataTable().ajax.reload();
                     },
                     error: function (err) {
-                        alert('Error deleting form');
+                        alert('Error deleting Field');
                     }
                 });
             }

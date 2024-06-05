@@ -1,6 +1,7 @@
 ﻿using DocumentClassificationZonalOcr.MVC.Base;
 using DocumentClassificationZonalOcr.MVC.Clients.Abstractions;
 using DocumentClassificationZonalOcr.Shared.Dtos;
+using DocumentClassificationZonalOcr.Shared.Requests;
 
 namespace DocumentClassificationZonalOcr.MVC.Clients
 {
@@ -16,9 +17,9 @@ namespace DocumentClassificationZonalOcr.MVC.Clients
             return await GetAsync<BaseResponse<FieldDto>>($"api/Field/{fieldId}");
         }
 
-        public async Task<BaseResponse<bool>> ModifyFieldAsync(int fieldId, string newName)
+        public async Task<BaseResponse<bool>> ModifyFieldAsync(int fieldId, FieldRequestDto fieldRequest)
         {
-            return await PutAsync<string, BaseResponse<bool>>($"api/Field/{fieldId}", newName);
+            return await PutAsync<FieldRequestDto, BaseResponse<bool>>($"api/Field/{fieldId}", fieldRequest);
         }
 
         public async Task<BaseResponse<bool>> RemoveFieldAsync(int fieldId)

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Localization;
 using System.Globalization;
 using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace DocumentClassificationZonalOcr.MVC.Base
 {
@@ -30,6 +31,8 @@ namespace DocumentClassificationZonalOcr.MVC.Base
 
                 if (response.IsSuccessStatusCode)
                 {
+                    //var resopnse = await response.Content.ReadAsStringAsync();
+                    //return JsonSerializer.Deserialize<T>(resopnse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     return await response.Content.ReadFromJsonAsync<T>();
                 }
                 else

@@ -9,7 +9,7 @@ namespace DocumentClassificationZonalOcr.Api.Services.Abstractions
     {
         Task<Result<IEnumerable<Paper>>> GetAllPapersByFormIdAsync(int formId);
         Task<Result<IEnumerable<Paper>>> GetAllPapersByDocumentIdAsync(int documentId);
-        Task<Result<IEnumerable<ExportedMetaData>>> GetAllPaperMetadataAsync(int paperId);
+        Task<Result<List<OcrValuePreviewDto>>> GetAllPaperMetadataAsync(int paperId);
         Task<Result<bool>> ProcessImageAsync(IFormFile image);
         Task<Result<bool>> ProcessImagesAsync(List<IFormFile> images);
         Task<Result<CustomList<PaperDto>>> GetAllPapersAsync(DataTableOptionsDto options);

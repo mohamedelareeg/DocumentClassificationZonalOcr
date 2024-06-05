@@ -44,5 +44,27 @@ namespace DocumentClassificationZonalOcr.MVC.Controllers
                 data
             });
         }
+        public async Task<IActionResult> GetDetails(int id, string[] fields = null)
+        {
+            var response = await _paperClient.GetAllPaperMetadataAsync(id);
+
+            if (!response.Succeeded)
+            {
+                return BadRequest(response.Message);
+            }
+            foreach (var item in response.Data.Items)
+            {
+                if (!string.IsNullOrEmpty(item.FilePath))
+                {
+                    item.FilePath = item.FilePath.Replace("\\", "/");
+                }
+            }
+            //var detailsData = new List<object>();
+
+            //detailsData.Add(new { fieldName = "Field 1", fieldValue = "Dummy Value 1", imagePath = "https://via.placeholder.com/100" });
+            //detailsData.Add(new { fieldName = "Field 2", fieldValue = "Dummy Value 2", imagePath = "https://via.placeholder.com/120" });
+
+            return Ok(response.Data.Items);
+        }
     }
 }

@@ -1,92 +1,207 @@
 ﻿@model int
 @{
-    ViewData["Title"] = "Detection History";
+  ViewData["Title"] = "Detection History";
 }
 
+<style>
+    #detailImage {
+        width: 100%;
+        height: auto;
+    }
+
+    .custom-table {
+        border-collapse: collapse;
+    }
+
+    .custom-table th,
+    .custom-table td {
+        border: 1px solid #ddd; 
+    }
+
+    .custom-table thead th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+
+    .custom-table tr:nth-child(even) {
+        background-color: #fafafa;
+    }
+
+    .custom-table tr.selected {
+        background-color: #e0e0e0; 
+    }
+
+    .modal-dialog {
+        max-width: 80%;
+        max-height: 80vh;
+        margin: auto;
+    }
+
+    .modal-content {
+        border-radius: 5px; 
+        background-color: #fff;
+        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .modal-title {
+        font-weight: bold;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+</style>
 <div class="container mx-2">
-    <table id="FormSamplesTable" class="table table-striped table-bordered" style="width:100%">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+  <table id="FormSamplesTable" class="table table-striped table-bordered" style="width:100%">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+    <div id="detailsDialog" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detection Details</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <img id="detailImage" src="#" alt="Detection Image" class="img-fluid" />
+                        </div>
+                        <div class="col-md-6">
+                            <table class="custom-table table table-sm" id="detailsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Value</th>
+                                        <th>Preview</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="selected"></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+
 @section Scripts {
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/DataTables/datatables.min.js"></script>
+  <script src="~/lib/jquery/dist/jquery.min.js"></script>
+  <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="~/DataTables/datatables.min.js"></script>
 
-    <script>
-        function displayImageThumbnail(input) {
-            var imageThumbnail = document.getElementById("imageThumbnail");
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
-                reader.onload = function (e) {
-                    imageThumbnail.innerHTML = '<img src="' + e.target.result + '" alt="Image Thumbnail" width="100" />';
-                };
-                reader.readAsDataURL(input.files[0]);
-            } else {
-                imageThumbnail.innerHTML = '';
-            }
-        }
-        $(document).ready(function () {
+  <script>
+    function displayImageThumbnail(input) {
+      var imageThumbnail = document.getElementById("imageThumbnail");
+      if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          imageThumbnail.innerHTML = '<img src="' + e.target.result + '" alt="Image Thumbnail" width="100" />';
+        };
+        reader.readAsDataURL(input.files[0]);
+      } else {
+        imageThumbnail.innerHTML = '';
+      }
+    }
 
-            // DataTable initialization
-            var table = $('#FormSamplesTable').DataTable({
-                "processing": true,
-                "serverSide": true,
-                "ajax": {
-                    "url": "@Url.Action("LoadData", "History", new { formId = Model })",
-                    "type": "POST",
-                    "contentType": "application/json; charset=utf-8",
-                    "data": function (d) {
-                        return JSON.stringify({
-                            draw: d.draw,
-                            start: d.start,
-                            length: d.length,
-                            searchText: d.search.value,
-                            orderBy: d.order.map(o => `${d.columns[o.column].data} ${o.dir}`).join(', '),
-                            fromDate: $('#fromDate').val(),
-                            toDate: $('#toDate').val()
-                        });
-                    }
-                },
-                "columns": [
-                    { "data": "serial" },
-                    {
-                        "data": null,
-                        "render": function (data, type, row) {
-                            return '<img src="' + row.imagePath + '" alt="Image" style="max-width:100px; max-height:100px;">';
-                        }
-                    },
-                    {
-                        "data": null,
-                        "render": function (data, type, row) {
-                            return '<a  class="btn btn-warning">Edit</a>';
-                        }
-                    }
-                ]
+    $(document).ready(function () {
+
+      // DataTable initialization
+      var table = $('#FormSamplesTable').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+          "url": "@Url.Action("LoadData", "History", new { formId = Model })",
+          "type": "POST",
+          "contentType": "application/json; charset=utf-8",
+          "data": function (d) {
+            return JSON.stringify({
+              draw: d.draw,
+              start: d.start,
+              length: d.length,
+              searchText: d.search.value,
+              orderBy: d.order.map(o => `${d.columns[o.column].data} ${o.dir}`).join(', '),
+              fromDate: $('#fromDate').val(),
+              toDate: $('#toDate').val()
             });
-            // Function to delete form sample
-            function deleteFormSample(id) {
-                if (confirm("Are you sure you want to delete this form sample?")) {
-                    $.ajax({
-                        url: '@Url.Action("Delete", "FormSample")/' + id,
-                        type: 'DELETE',
-                        success: function (result) {
-                            $('#FormSamplesTable').DataTable().ajax.reload();
-                        },
-                        error: function (err) {
-                            alert('Error deleting form sample');
-                        }
-                    });
-                }
+          }
+        },
+        "columns": [
+          { "data": "serial" },
+        {
+            "data": null,
+            "render": function (data, type, row) {
+                return '<img src="' + row.imagePath + '" alt="Image" style="max-width:100px; max-height:100px;">';
             }
-        });
+        },
+          {
+            "data": null,
+            "render": function (data, type, row) {
+              return '<button type="button" class="btn btn-warning view-details" data-id="' + row.id + '">View</button>';
+            }
+          }
+        ]
+      });
+
+            $('#FormSamplesTable tbody').on('click', '.view-details', function () {
+                var id = $(this).data('id');
+
+                $.ajax({
+                    url: '@Url.Action("GetDetails", "History")/' + id,
+                    type: 'GET',
+                    success: function (detailsData) {
+                        var detailsTableBody = $('#detailsTable tbody');
+                        detailsTableBody.empty();
+                        $('#detailImage').attr('src', detailsData[0].filePath);
+
+                        detailsData.forEach(function (field) {
+                            var row = $('<tr></tr>');
+                            row.append('<td>' + field.fieldName + '</td>');
+                            row.append('<td>' + field.fieldValue + '</td>');
+                            row.append(createPreviewButton(field)); 
+                            detailsTableBody.append(row);
+                        });
+                        $('#detailsDialog').modal('show');
+                    },
+                    error: function (err) {
+                        alert('Error fetching details');
+                    }
+                });
+            });
+            function createPreviewButton(field) {
+                var hideCell = $('<td></td>');
+                var previewButton = $('<button type="button" class="btn btn-sm btn-outline-secondary">Preview</button>');
+                hideCell.append(previewButton);
+                previewButton.data('imagePath', field.imagePath);
+                previewButton.on('click', function () {
+                    var imagePath = $(this).data('imagePath');
+                    $('#detailImage').attr('src', imagePath);
+
+                });
+
+                previewButton.data('imagePath', field.filePath);
+
+                return hideCell;
+            }
+            $('#detailImage').on('click', function () {
+
+            });
+    });
     </script>
 }

@@ -1,5 +1,6 @@
 ﻿using DocumentClassificationZonalOcr.Api.Data.Repositories;
 using DocumentClassificationZonalOcr.Api.Data.Repositories.Abstractions;
+using DocumentClassificationZonalOcr.Api.MappingExtensions;
 using DocumentClassificationZonalOcr.Api.Models;
 using DocumentClassificationZonalOcr.Api.Results;
 using DocumentClassificationZonalOcr.Api.Services.Abstractions;
@@ -69,13 +70,18 @@ namespace DocumentClassificationZonalOcr.Api.Services
             return Result.Success(result.Value);
         }
 
-        public async Task<Result<IEnumerable<ExportedMetaData>>> GetAllPaperMetadataAsync(int paperId)
+        public async Task<Result<List<OcrValuePreviewDto>>> GetAllPaperMetadataAsync(int paperId)
         {
             var result = await _exportedMetaDataRepository.GetAllByPaperIdAsync(paperId);
             if (result.IsFailure)
-                return Result.Failure<IEnumerable<ExportedMetaData>>(result.Error);
+                return Result.Failure<List<OcrValuePreviewDto>>(result.Error);
 
-            return Result.Success(result.Value);
+            var request = _httpContextAccessor.HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host.Value}";
+
+            var dto = result.Value.Select(paper => paper.ToZoneDto(baseUrl)).ToList();
+
+            return Result.Success(dto);
         }
 
         private async Task<Result<bool>> ProcessSingleImageAsync(IFormFile image, FormDetectionSetting formDetectionSetting)
@@ -197,7 +203,7 @@ namespace DocumentClassificationZonalOcr.Api.Services
 
                 foreach (var ocrValue in ocrValues)
                 {
-                    var createExportedMetadataResult = ExportedMetaData.Create(ocrValue.FieldId,ocrValue.Value,createPaper.Id);
+                    var createExportedMetadataResult = ExportedMetaData.Create(ocrValue.FieldId,ocrValue.Value,createPaper.Id,ocrValue.FilePath);
                     if (createExportedMetadataResult.IsFailure)
                         return Result.Failure<bool>(createExportedMetadataResult.Error);
 

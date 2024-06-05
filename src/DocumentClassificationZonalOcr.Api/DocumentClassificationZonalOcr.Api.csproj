@@ -37,9 +37,4 @@
     <ProjectReference Include="..\DocumentClassificationZonalOcr.Shared\DocumentClassificationZonalOcr.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
-
 </Project>

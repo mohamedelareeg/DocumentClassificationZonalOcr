@@ -37,9 +37,9 @@ namespace DocumentClassificationZonalOcr.MVC.Clients
             return await GetAsync<BaseResponse<List<PaperDto>>>($"api/Paper/document/{documentId}");
         }
 
-        public async Task<BaseResponse<ExportedMetaDataDto>> GetAllPaperMetadataAsync(int paperId)
+        public async Task<BaseResponse<CustomList<OcrValuePreviewDto>>> GetAllPaperMetadataAsync(int paperId)
         {
-            return await GetAsync<BaseResponse<ExportedMetaDataDto>>($"api/Paper/metadata/{paperId}");
+            return await GetAsync<BaseResponse<CustomList<OcrValuePreviewDto>>>($"api/Paper/metadata/{paperId}");
         }
 
         public async Task<BaseResponse<bool>> ProcessImageAsync(IFormFile image)

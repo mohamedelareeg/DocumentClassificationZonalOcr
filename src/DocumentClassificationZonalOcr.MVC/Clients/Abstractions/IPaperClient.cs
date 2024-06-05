@@ -11,7 +11,7 @@ namespace DocumentClassificationZonalOcr.MVC.Clients.Abstractions
         Task<BaseResponse<PaperDto>> GetPaperByIdAsync(int paperId);
         Task<BaseResponse<List<PaperDto>>> GetAllPapersByFormIdAsync(int formId);
         Task<BaseResponse<List<PaperDto>>> GetAllPapersByDocumentIdAsync(int documentId);
-        Task<BaseResponse<ExportedMetaDataDto>> GetAllPaperMetadataAsync(int paperId);
+        Task<BaseResponse<CustomList<OcrValuePreviewDto>>> GetAllPaperMetadataAsync(int paperId);
         Task<BaseResponse<bool>> ProcessImageAsync(IFormFile image);
         Task<BaseResponse<bool>> ProcessImagesAsync(List<IFormFile> images);
         Task<BaseResponse<CustomList<PaperDto>>> GetAllPapersAsync(DataTableOptionsDto options);

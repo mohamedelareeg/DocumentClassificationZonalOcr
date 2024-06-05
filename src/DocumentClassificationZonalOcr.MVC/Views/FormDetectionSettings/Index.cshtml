@@ -1,0 +1,134 @@
+﻿@model DocumentClassificationZonalOcr.Shared.Dtos.FormDetectionSettingDto
+
+@{
+    ViewData["Title"] = "Form Detection Settings";
+    var successMessage = TempData["SuccessMessage"] as string;
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success" role="alert">
+        @successMessage
+    </div>
+}
+<form asp-action="Update" method="post">
+    <div class="form-group">
+        <label asp-for="OcrEngine" class="control-label">OCR Engine</label>
+        <select asp-for="OcrEngine" class="form-control">
+            @foreach (var option in Enum.GetValues(typeof(DocumentClassificationZonalOcr.Shared.Enums.OcrEngine)))
+            {
+                var enumValue = (DocumentClassificationZonalOcr.Shared.Enums.OcrEngine)option;
+                if (Model.OcrEngine == enumValue)
+                {
+                    <option value="@option" selected>@enumValue</option>
+                }
+                else
+                {
+                    <option value="@option">@enumValue</option>
+                }
+            }
+        </select>
+
+        <span asp-validation-for="OcrEngine" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="FormSimilarity" class="control-label">Form Similarity</label>
+        <input asp-for="FormSimilarity" class="form-control" />
+        <span asp-validation-for="FormSimilarity" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="DetectOptions" class="control-label">Detection Options</label>
+        <select asp-for="DetectOptions" class="form-control">
+            @foreach (var option in Enum.GetValues(typeof(DocumentClassificationZonalOcr.Shared.Enums.DetectOptions)))
+            {
+                var enumValue = (DocumentClassificationZonalOcr.Shared.Enums.DetectOptions)option;
+                if (Model.DetectOptions == enumValue)
+                {
+                    <option value="@option" selected>@enumValue</option>
+                }
+                else
+                {
+                    <option value="@option">@enumValue</option>
+                }
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label asp-for="ZoneAllowedWidth" class="control-label">Zone Allowed Width</label>
+        <input asp-for="ZoneAllowedWidth" class="form-control" />
+        <span asp-validation-for="ZoneAllowedWidth" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ZoneAllowedHeight" class="control-label">Zone Allowed Height</label>
+        <input asp-for="ZoneAllowedHeight" class="form-control" />
+        <span asp-validation-for="ZoneAllowedHeight" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="DetectAlgorithm" class="control-label">Detection Algorithm</label>
+        <select asp-for="DetectAlgorithm" class="form-control">
+            @foreach (var option in Enum.GetValues(typeof(DocumentClassificationZonalOcr.Shared.Enums.DetectAlgorithm)))
+            {
+                var enumValue = (DocumentClassificationZonalOcr.Shared.Enums.DetectAlgorithm)option;
+                if (Model.DetectAlgorithm == enumValue)
+                {
+                    <option value="@option" selected>@enumValue</option>
+                }
+                else
+                {
+                    <option value="@option">@enumValue</option>
+                }
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ActivePerspectiveTransform" class="control-label">Active Perspective Transform</label>
+        <input type="checkbox" asp-for="ActivePerspectiveTransform" class="form-check-input" />
+        <span asp-validation-for="ActivePerspectiveTransform" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ResizeImage" class="control-label">Resize Image</label>
+        <input type="checkbox" asp-for="ResizeImage" class="form-check-input" />
+        <span asp-validation-for="ResizeImage" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ConvertToGrayscale" class="control-label">Convert To Grayscale</label>
+        <input type="checkbox" asp-for="ConvertToGrayscale" class="form-check-input" />
+        <span asp-validation-for="ConvertToGrayscale" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Normalization" class="control-label">Normalization</label>
+        <input type="checkbox" asp-for="Normalization" class="form-check-input" />
+        <span asp-validation-for="Normalization" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Blurring" class="control-label">Blurring</label>
+        <input type="checkbox" asp-for="Blurring" class="form-check-input" />
+        <span asp-validation-for="Blurring" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="EdgeDetection" class="control-label">Edge Detection</label>
+        <input type="checkbox" asp-for="EdgeDetection" class="form-check-input" />
+        <span asp-validation-for="EdgeDetection" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="HistogramEqualization" class="control-label">Histogram Equalization</label>
+        <input type="checkbox" asp-for="HistogramEqualization" class="form-check-input" />
+        <span asp-validation-for="HistogramEqualization" class="text-danger"></span>
+    </div>
+
+    
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>

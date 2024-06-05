@@ -18,6 +18,7 @@ namespace DocumentClassificationZonalOcr.Api.MappingExtensions
                 FormId = paper.FormId ?? 0
             };
         }
+
         public static Paper ToEntity(this PaperDto paperDto)
         {
             var paperResult = Paper.Create(paperDto.FilePath, paperDto.Name, paperDto.DocumentId, paperDto.FormId);

@@ -7,6 +7,7 @@ using Tesseract;
 using System.Threading.Tasks;
 using System;
 using DocumentClassificationZonalOcr.Shared.Dtos;
+using Microsoft.AspNetCore.Hosting;
 
 namespace DocumentClassificationZonalOcr.Api.Services
 {
@@ -14,6 +15,7 @@ namespace DocumentClassificationZonalOcr.Api.Services
     {
         private readonly IFormSampleRepository _formSampleRepository;
         private readonly IImageEnhancementService _imageEnhancementService;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
 
         #region TesseractOcr
@@ -21,10 +23,11 @@ namespace DocumentClassificationZonalOcr.Api.Services
         private static readonly string Language = "ara+eng";
         private static readonly TesseractEngine _engine = new TesseractEngine(tessdataPath, Language, EngineMode.Default);
         #endregion
-        public OcrService(IFormSampleRepository formSampleRepository, IImageEnhancementService imageEnhancementService)
+        public OcrService(IFormSampleRepository formSampleRepository, IImageEnhancementService imageEnhancementService, IWebHostEnvironment webHostEnvironment)
         {
             _formSampleRepository = formSampleRepository;
             _imageEnhancementService = imageEnhancementService;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         public async Task<Result<List<OcrValuesDto>>> OcrImageAsync(int formSampleId, Bitmap processedImage, FormDetectionSetting formDetectionSetting)
@@ -97,10 +100,23 @@ namespace DocumentClassificationZonalOcr.Api.Services
                 }
                 if (!string.IsNullOrEmpty(value))
                 {
-                    var dto = new OcrValuesDto { FieldId= (int)zone.FieldId, Value = value };
+                    #region Saving Zone
+                    string outputDirectory = Path.Combine(_webHostEnvironment.WebRootPath, "detected");
+                    if (!Directory.Exists(outputDirectory))
+                    {
+                        Directory.CreateDirectory(outputDirectory);
+                    }
+                    string imageUniqueName = $"{Guid.NewGuid()}.png";
+                    string ZoneFilePath = Path.Combine(outputDirectory, imageUniqueName);
+                    string FilePath = Path.Combine("detected", imageUniqueName);
+
+                    bitmapCopy.Save(ZoneFilePath, System.Drawing.Imaging.ImageFormat.Png);
+
+                    #endregion
+                    var dto = new OcrValuesDto { FieldId = (int)zone.FieldId, Value = value, FilePath= FilePath };
                     dtos.Add(dto);
                 }
-               
+
             }
             return dtos;
         }

@@ -15,7 +15,23 @@ namespace DocumentClassificationZonalOcr.Api.Services
         {
             _fieldRepository = fieldRepository;
         }
+        public async Task<Result<bool>> ModifyFieldAsync(int fieldId, string newName, FieldType newType)
+        {
+            var fieldResult = await _fieldRepository.GetByIdAsync(fieldId);
+            if (fieldResult.IsFailure)
+                return Result.Failure<bool>(fieldResult.Error);
 
+            var field = fieldResult.Value;
+            var resultName = field.ModifyName(newName);
+            if (resultName.IsFailure)
+                return Result.Failure<bool>(resultName.Error);
+
+            var resultType = field.ModifyType(newType);
+            if (resultType.IsFailure)
+                return Result.Failure<bool>(resultType.Error);
+
+            return await _fieldRepository.UpdateAsync(field);
+        }
         public async Task<Result<bool>> ModifyFieldNameAsync(int fieldId, string newName)
         {
             var fieldResult = await _fieldRepository.GetByIdAsync(fieldId);

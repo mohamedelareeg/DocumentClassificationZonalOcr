@@ -27,7 +27,7 @@ namespace DocumentClassificationZonalOcr.Api.Controllers
         [HttpPut("{fieldId}")]
         public async Task<IActionResult> ModifyField(int fieldId, [FromBody] FieldRequestDto fieldRequest)
         {
-            var result = await _fieldService.ModifyFieldNameAsync(fieldId, fieldRequest.Name);
+            var result = await _fieldService.ModifyFieldAsync(fieldId, fieldRequest.Name,fieldRequest.Type);
             return CustomResult(result);
         }
 
